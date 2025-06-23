@@ -1,0 +1,272 @@
+{
+  "project_info": {
+    "name": "Multi-Device Android Controller",
+    "description": "Aplicação C++ para controlar múltiplos dispositivos Android via ADB, inspirada no scrcpy mas com suporte a múltiplos dispositivos para automação",
+    "architecture": "SOLID com camadas: Presentation (Qt/QML), Use-Case, Infrastructure (ADB, persistência), Core (entidades e regras de negócio)",
+    "language": "C++17",
+    "framework": "Qt 6.6.0",
+    "build_system": "CMake",
+    "ide": "CLion",
+    "last_updated": "2024-12-19"
+  },
+  "project_structure": {
+    "root": {
+      "cmake-build-debug/": "Diretório de build do CLion",
+      "CMakeLists.txt": "Configuração principal do CMake",
+      "docs/": "Documentação do projeto",
+      "README.md": "Documentação principal",
+      "scripts/": "Scripts de build e automação",
+      "src/": "Código fonte principal",
+      "tests/": "Testes unitários e de integração",
+      "vcpkg.json": "Dependências do vcpkg"
+    },
+    "src": {
+      "CMakeLists.txt": "Configuração CMake para src",
+      "main.cpp": "Ponto de entrada da aplicação",
+      "core/": "Camada Core - entidades e regras de negócio",
+      "infrastructure/": "Camada Infrastructure - ADB, persistência",
+      "presentation/": "Camada Presentation - Qt/QML UI",
+      "use_case/": "Camada Use Case - lógica de negócio"
+    },
+    "src/core": {
+      "CMakeLists.txt": "Configuração CMake para core",
+      "entities/": "Entidades do domínio",
+      "interfaces/": "Interfaces/abstrações"
+    },
+    "src/core/entities": {
+      "device.h": "Entidade Device com propriedades Qt",
+      "device.cpp": "Implementação da entidade Device",
+      "device_status.h": "Enum DeviceStatus com suporte Qt",
+      "device_status.cpp": "Implementação do DeviceStatus",
+      "command.h": "Entidade Command para automação",
+      "command.cpp": "Implementação do Command",
+      "automation_script.h": "Entidade AutomationScript",
+      "automation_script.cpp": "Implementação do AutomationScript"
+    },
+    "src/core/interfaces": {
+      "command_executor.h": "Interface para execução de comandos",
+      "device_repository.h": "Interface para persistência de dispositivos"
+    },
+    "src/infrastructure": {
+      "CMakeLists.txt": "Configuração CMake para infrastructure",
+      "adb/": "Implementação ADB",
+      "persistence/": "Implementação de persistência"
+    },
+    "src/infrastructure/adb": {
+      "adb_service.h": "Serviço ADB principal",
+      "adb_service.cpp": "Implementação do AdbService",
+      "adb_command_executor.h": "Executor de comandos ADB",
+      "adb_command_executor.cpp": "Implementação do AdbCommandExecutor",
+      "screen_capture_service.h": "Serviço de captura de tela",
+      "screen_capture_service.cpp": "Implementação do ScreenCaptureService"
+    },
+    "src/infrastructure/persistence": {
+      "device_repository_impl.h": "Implementação do DeviceRepository",
+      "device_repository_impl.cpp": "Implementação da persistência",
+      "settings_manager.h": "Gerenciador de configurações",
+      "settings_manager.cpp": "Implementação do SettingsManager"
+    },
+    "src/presentation": {
+      "CMakeLists.txt": "Configuração CMake para presentation",
+      "main_window.h": "Janela principal Qt",
+      "main_window.cpp": "Implementação da janela principal",
+      "qml/": "Arquivos QML",
+      "view_models/": "View Models Qt"
+    },
+    "src/presentation/qml": {
+      "main.qml": "Interface principal QML",
+      "DeviceCard.qml": "Componente de cartão de dispositivo",
+      "WelcomeView.qml": "Tela de boas-vindas",
+      "Style.qml": "Sistema de estilo centralizado",
+      "LoggingBridge.qml": "Bridge para logging entre QML e C++",
+      "ColoredSvg.qml": "Componente SVG com controle de cores",
+      "qml.qrc": "Recursos QML",
+      "components/": "Componentes reutilizáveis"
+    },
+    "src/presentation/qml/components": {
+      "StatusIndicator.qml": "Indicador de status de dispositivo reutilizável",
+      "IconButton.qml": "Botão com ícone reutilizável",
+      "FeatureCard.qml": "Cartão de feature reutilizável",
+      "SidebarHeader.qml": "Cabeçalho da sidebar com título e botão refresh",
+      "DeviceStatsCard.qml": "Card com estatísticas de dispositivos conectados",
+      "LoadingOverlay.qml": "Overlay de carregamento reutilizável",
+      "ErrorMessageCard.qml": "Card de mensagem de erro reutilizável",
+      "Sidebar.qml": "Componente completo da sidebar",
+      "MainContentArea.qml": "Área principal de conteúdo",
+      "MultiDeviceMirrorView.qml": "View de espelhamento múltiplo de dispositivos",
+      "DeviceMirrorCard.qml": "Card individual para espelhamento de dispositivo"
+    },
+    "src/presentation/view_models": {
+      "device_list_view_model.h": "ViewModel para lista de dispositivos",
+      "device_list_view_model.cpp": "Implementação do DeviceListViewModel",
+      "device_control_view_model.h": "ViewModel para controle de dispositivos",
+      "device_control_view_model.cpp": "Implementação do DeviceControlViewModel",
+      "multi_device_mirror_view_model.h": "ViewModel para espelhamento múltiplo",
+      "multi_device_mirror_view_model.cpp": "Implementação do MultiDeviceMirrorViewModel"
+    },
+    "src/use_case": {
+      "CMakeLists.txt": "Configuração CMake para use_case",
+      "device_management_use_case.h": "Caso de uso para gerenciamento de dispositivos",
+      "device_management_use_case.cpp": "Implementação do DeviceManagementUseCase",
+      "device_control_use_case.h": "Caso de uso para controle de dispositivos",
+      "device_control_use_case.cpp": "Implementação do DeviceControlUseCase",
+      "automation_use_case.h": "Caso de uso para automação",
+      "automation_use_case.cpp": "Implementação do AutomationUseCase"
+    },
+    "tests": {
+      "CMakeLists.txt": "Configuração CMake para testes",
+      "unit/": "Testes unitários",
+      "integration/": "Testes de integração"
+    },
+    "tests/unit": {
+      "CMakeLists.txt": "Configuração CMake para testes unitários",
+      "test_device.cpp": "Testes para entidade Device",
+      "test_device_status.cpp": "Testes para DeviceStatus",
+      "test_device_management_use_case.cpp": "Testes para DeviceManagementUseCase",
+      "test_adb_service.cpp": "Testes para AdbService"
+    },
+    "tests/integration": {
+      "CMakeLists.txt": "Configuração CMake para testes de integração",
+      "test_full_workflow.cpp": "Testes de fluxo completo"
+    }
+  },
+  "dependencies": {
+    "qt": {
+      "version": "6.6.0",
+      "modules": ["Core", "Gui", "Widgets", "Qml", "Quick", "Network", "Json"],
+      "installation_path": "/home/jonatas/.local/share/qt"
+    },
+    "cmake": {
+      "minimum_version": "3.16"
+    },
+    "compiler": {
+      "cxx_standard": "17",
+      "required": "GCC 7+ ou Clang 5+"
+    },
+    "testing": {
+      "framework": "Google Test",
+      "mocking": "Google Mock"
+    }
+  },
+  "build_configuration": {
+    "cmake_generator": "Ninja",
+    "build_type": "Debug",
+    "qt_path": "/home/jonatas/.local/share/qt/6.6.0/gcc_64",
+    "cmake_path": "/home/jonatas/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/cmake",
+    "ninja_path": "/home/jonatas/.local/share/JetBrains/Toolbox/apps/clion/bin/cmake/linux/x64/bin/ninja"
+  },
+  "development_notes": {
+    "current_status": "Projeto configurado com estrutura SOLID completa. Todos os arquivos de implementação foram criados. CMake configurado para Qt 6.6.0 via aqtinstall. Testes básicos implementados. Tema dark configurado por padrão com sistema de estilo centralizado, sistema de logging robusto integrado com QML e ícones SVG otimizados. Compilação funcionando corretamente após correção de erros de tipo QQmlListProperty. Implementado sistema de espelhamento múltiplo de dispositivos Android com captura de tela em tempo real via ADB. Corrigidos erros QML relacionados a componentes não encontrados e propriedades inexistentes. Corrigido problema de gerenciamento de processos QProcess para evitar erros 'Process is already running' e 'Destroyed while process is still running'.",
+    "recent_changes": [
+      "Corrigido problema de cleanup de processos QProcess - implementado terminação adequada antes de destruir objetos",
+      "Adicionado método stopAllProcesses() ao CommandExecutor para forçar limpeza de todos os processos",
+      "Melhorado processo de terminação com timeouts adequados (terminate com 2s, kill com 1s)",
+      "Adicionada limpeza forçada de processos no ScreenCaptureService quando para capturas",
+      "Corrigido problema de gerenciamento de processos QProcess - implementado sistema de processos separados por dispositivo",
+      "Modificado AdbCommandExecutor para usar QMap de processos ao invés de processo único",
+      "Adicionado sistema de cleanup automático de processos para evitar vazamentos de memória",
+      "Corrigido erro QML 'Type DeviceMirrorCard unavailable' - movido DeviceMirrorCard como componente local dentro do MultiDeviceMirrorView",
+      "Corrigido erro QML 'Cannot assign to non-existent property style' - removidas propriedades border.style que não existem no Qt Quick 2.15",
+      "Adicionada propriedade 'success' ao Style.qml para suportar cores de sucesso nos componentes",
+      "Substituídos componentes ColoredSvg e IconButton por componentes nativos do Qt (Image e Button) para melhor compatibilidade",
+      "Adicionados Q_INVOKABLE markers para setGridColumns e setGridRows no MultiDeviceMirrorViewModel",
+      "Corrigidos problemas de estilo QML - adicionadas verificações null para appStyle em todos os componentes",
+      "Melhorado sistema de detecção de tipos de conexão ADB para wireless debugging",
+      "Adicionado suporte para múltiplos formatos de wireless debugging (.adb-tls-connect._tcp, .adb._tcp, .adb-tls-pairing._tcp)",
+      "Melhoradas mensagens de erro para wireless debugging com sugestões de formato IP:porta",
+      "Implementado sistema de espelhamento múltiplo de dispositivos Android similar ao Geelark",
+      "Criado ScreenCaptureService para captura de tela em tempo real via ADB",
+      "Desenvolvido MultiDeviceMirrorView com layout grid para exibir múltiplas telas",
+      "Criado DeviceMirrorCard para exibir tela individual de cada dispositivo",
+      "Implementado MultiDeviceMirrorViewModel para gerenciar estado do espelhamento",
+      "Adicionado botão 'Multi-Device Mirror' na sidebar para acessar espelhamento",
+      "Corrigido erro de conexão ADB - agora suporta USB, Wi-Fi e wireless debugging",
+      "Melhorado sistema de detecção de tipos de conexão de dispositivos",
+      "Adicionado helper method getDeviceConnectionType para melhor classificação",
+      "Corrigido erro 'Cannot connect: device ID is not a valid IP address'",
+      "Corrigido erro de compilação QQmlListProperty - alterado m_devices de QList<QObject*> para QList<core::entities::Device*> no DeviceListViewModel",
+      "Removidos qobject_cast desnecessários no DeviceListViewModel após correção do tipo da lista",
+      "Alterado registro do Device de qmlRegisterType para qmlRegisterUncreatableType para evitar erro com classe final",
+      "Simplificado sistema de SVGs - removido ColoredSvg complexo e voltado ao Image nativo do Qt 6",
+      "SVGs agora usam apenas componentes Image nativos com sourceSize, smooth e mipmap otimizados",
+      "Removidas dependências externas (QtGraphicalEffects, Qt5Compat) para máxima compatibilidade",
+      "Implementado controle dinâmico de cores para SVGs usando ColorOverlay - criado componente ColoredSvg reutilizável",
+      "Substituídos todos os componentes Image por ColoredSvg para controle de cores dinâmico",
+      "SVGs agora respeitam as cores do tema (branco para botões, accent para ícones de features)",
+      "Melhorado controle de tamanho de SVGs em todos os componentes Image - adicionado sourceSize, smooth e mipmap para melhor renderização",
+      "Otimizado conjunto de ícones SVG - removidos ícones não utilizados (connect_blue.svg, control_blue.svg)",
+      "Atualizado README.md dos ícones para documentar apenas os 14 ícones realmente utilizados",
+      "Criado sistema de logging centralizado (Logger) usando funcionalidades nativas do Qt 6",
+      "Implementado LoggingBridge.qml para integração entre QML e sistema de logging C++",
+      "Substituído console.log por sistema de logging robusto com categorias e níveis",
+      "Adicionado logging ao main.qml e Style.qml para demonstrar funcionalidade",
+      "Configurado CMakeLists.txt para incluir módulo de logging no core",
+      "Corrigido erro 'Cannot assign to non-existent property surface' removendo propriedades Material que não existem no Qt 6",
+      "Atualizado Style.qml para usar cores fixas ao invés de propriedades Material inexistentes",
+      "Removidas configurações Material.background, Material.foreground e Material.surface do main.qml",
+      "Adicionados backgrounds explícitos em main.qml e WelcomeView.qml para garantir aplicação correta do tema dark",
+      "Corrigidos botões restantes no main.qml para usar sistema de estilo centralizado",
+      "Melhorado sistema de estilo com cores mais apropriadas para tema dark e debug de cores",
+      "Adicionadas configurações explícitas do Material (background, foreground, surface) no main.qml",
+      "Criado sistema de estilo centralizado (Style.qml) com fallbacks para evitar erros 'Unable to assign [undefined] to QColor'",
+      "Atualizados todos os arquivos QML para usar o sistema de estilo centralizado (appStyle) ao invés de propriedades Material diretas",
+      "Adicionado Style.qml ao qml.qrc para disponibilizar o sistema de estilo",
+      "Ajustadas cores em todos os arquivos QML (main.qml, WelcomeView.qml, DeviceCard.qml) para compatibilidade com tema dark",
+      "Substituídas cores hardcoded por propriedades Material Design (Material.foreground, Material.surface, Material.accent, etc.)",
+      "Alterado tema Material de Light para Dark por padrão em main.qml",
+      "Criados arquivos de implementação faltantes: device_status.cpp, adb_command_executor.h/.cpp, device_repository_impl.cpp, settings_manager.h/.cpp, command.h/.cpp, automation_script.h/.cpp",
+      "Atualizados testes unitários e de integração",
+      "Configurado Qt 6.6.0 via aqtinstall em /home/jonatas/.local/share/qt",
+      "Corrigidos CMakeLists.txt para apontar para o Qt instalado"
+    ],
+    "next_steps": [
+      "Testar execução da aplicação com espelhamento múltiplo funcionando sem erros de processo",
+      "Implementar controle de toque e teclado para automação",
+      "Melhorar performance da captura de tela",
+      "Adicionar mais opções de layout grid",
+      "Implementar gravação de vídeo dos dispositivos",
+      "Adicionar mais testes para o sistema de espelhamento",
+      "Melhorar tratamento de erros de conexão wireless debugging",
+      "Otimizar gerenciamento de memória para processos ADB",
+      "Implementar sistema de retry para comandos ADB que falham"
+    ],
+    "known_issues": [
+      "Alguns warnings de linter sobre includes Qt - normais para projeto em desenvolvimento",
+      "Projeto compila e executa corretamente",
+      "Sistema de espelhamento requer dispositivos conectados via ADB para funcionar",
+      "Wireless debugging pode requerer configuração manual do IP e porta no dispositivo Android",
+      "Processos ADB são criados dinamicamente - monitorar uso de memória em uso prolongado",
+      "Alguns processos ADB podem demorar para terminar - implementados timeouts adequados"
+    ]
+  },
+  "architecture_details": {
+    "layers": {
+      "presentation": {
+        "description": "Interface Qt/QML responsiva",
+        "components": ["MainWindow", "ViewModels", "QML Components"],
+        "dependencies": ["use_case"]
+      },
+      "use_case": {
+        "description": "Lógica de negócio e casos de uso",
+        "components": ["DeviceManagementUseCase", "DeviceControlUseCase", "AutomationUseCase"],
+        "dependencies": ["core", "infrastructure"]
+      },
+      "infrastructure": {
+        "description": "Comunicação ADB, persistência, serviços externos",
+        "components": ["AdbService", "DeviceRepositoryImpl", "SettingsManager", "ScreenCaptureService"],
+        "dependencies": ["core"]
+      },
+      "core": {
+        "description": "Entidades do domínio e regras de negócio",
+        "components": ["Device", "DeviceStatus", "Command", "AutomationScript"],
+        "dependencies": []
+      }
+    },
+    "patterns": {
+      "dependency_injection": "Usado em todos os casos de uso",
+      "repository_pattern": "Implementado para persistência de dispositivos",
+      "command_pattern": "Usado para execução de comandos ADB",
+      "observer_pattern": "Implementado via signals/slots Qt"
+    }
+  }
+} 
