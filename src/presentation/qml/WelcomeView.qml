@@ -297,8 +297,8 @@ Item {
 
             IconButton {
                 text: qsTr("Refresh Devices")
-                onClicked: deviceListViewModel.refreshDevices()
-                enabled: !deviceListViewModel.isLoading
+                onClicked: deviceListViewModel ? deviceListViewModel.refreshDevices() : null
+                enabled: deviceListViewModel ? !deviceListViewModel.isLoading : true
                 iconSource: "qrc:/icons/icons/refresh.svg"
                 appStyle: welcomeView.appStyle
             }

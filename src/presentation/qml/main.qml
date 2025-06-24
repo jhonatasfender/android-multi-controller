@@ -83,18 +83,22 @@ ApplicationWindow {
 
         Sidebar {
             appStyle: mainWindow.appStyle
-            isLoading: deviceListViewModel.isLoading
-            connectedDeviceCount: deviceListViewModel.connectedDeviceCount
-            deviceList: deviceListViewModel.devices
+            isLoading: deviceListViewModel ? deviceListViewModel.isLoading : false
+            connectedDeviceCount: deviceListViewModel ? deviceListViewModel.connectedDeviceCount : 0
+            deviceList: deviceListViewModel ? deviceListViewModel.devices : []
 
-            onRefreshClicked: deviceListViewModel.refreshDevices()
-            onConnectAllClicked: deviceListViewModel.connectToAllDevices()
-            onDisconnectAllClicked: deviceListViewModel.disconnectFromAllDevices()
+            onRefreshClicked: deviceListViewModel ? deviceListViewModel.refreshDevices() : null
+            onConnectAllClicked: deviceListViewModel ? deviceListViewModel.connectToAllDevices() : null
+            onDisconnectAllClicked: deviceListViewModel ? deviceListViewModel.disconnectFromAllDevices() : null
             onConnectDeviceClicked: function (deviceId) {
-                deviceListViewModel.connectToDevice(deviceId)
+                if (deviceListViewModel) {
+                    deviceListViewModel.connectToDevice(deviceId)
+                }
             }
             onDisconnectDeviceClicked: function (deviceId) {
-                deviceListViewModel.disconnectFromDevice(deviceId)
+                if (deviceListViewModel) {
+                    deviceListViewModel.disconnectFromDevice(deviceId)
+                }
             }
             onControlDeviceClicked: function (device) {
                 mainContentArea.navigateToDeviceControl(device)
@@ -107,8 +111,8 @@ ApplicationWindow {
         MainContentArea {
             id: mainContentArea
             appStyle: mainWindow.appStyle
-            isLoading: deviceListViewModel.isLoading
-            errorMessage: deviceListViewModel.errorMessage
+            isLoading: deviceListViewModel ? deviceListViewModel.isLoading : false
+            errorMessage: deviceListViewModel ? deviceListViewModel.errorMessage : ""
         }
     }
 
