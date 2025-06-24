@@ -1,5 +1,7 @@
 #include "device.h"
 
+#include <utility>
+
 namespace core::entities
 {
     Device::Device(QObject* parent) : QObject(parent), m_status(DeviceStatus::Unknown), m_connected(false), m_port(5555)
@@ -7,11 +9,19 @@ namespace core::entities
     }
 
     Device::Device(
+        QString id,
+        QString name,
+        QObject* parent
+    ) : QObject(parent), m_id(std::move(id)), m_name(std::move(name)), m_status(DeviceStatus::Unknown),
+        m_connected(false), m_port(5555)
+    {
+    }
+
+    Device::Device(
         const QString& id,
         const QString& name,
         QObject* parent
-    ) : QObject(parent), m_id(id), m_name(name), m_status(DeviceStatus::Unknown),
-        m_connected(false), m_port(5555)
+    ) : QObject(parent), m_id(id), m_name(name), m_status(DeviceStatus::Unknown), m_connected(false), m_port(5555)
     {
     }
 
@@ -61,7 +71,7 @@ namespace core::entities
         }
     }
 
-    void Device::setPort(int port)
+    void Device::setPort(const int port)
     {
         if (m_port != port)
         {

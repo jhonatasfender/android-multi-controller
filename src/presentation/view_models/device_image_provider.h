@@ -6,8 +6,9 @@
 #include <QMap>
 #include <QMutex>
 
-namespace presentation {
-    class DeviceImageProvider : public QQuickImageProvider
+namespace presentation
+{
+    class DeviceImageProvider final : public QQuickImageProvider
     {
     public:
         DeviceImageProvider();

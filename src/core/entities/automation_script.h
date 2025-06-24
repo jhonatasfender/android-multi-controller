@@ -16,6 +16,7 @@ namespace core::entities
 
     public:
         explicit AutomationScript(QObject* parent = nullptr);
+        AutomationScript(QString id, QString name, QObject* parent);
         AutomationScript(const QString& id, const QString& name, QObject* parent = nullptr);
 
         QString id() const { return m_id; }

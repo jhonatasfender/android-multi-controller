@@ -6,18 +6,17 @@ namespace presentation::view_models
 {
     MultiDeviceMirrorViewModel::MultiDeviceMirrorViewModel(
         const std::shared_ptr<use_case::DeviceManagementUseCase>& deviceUseCase,
-        presentation::DeviceImageProvider* imageProvider,
+        DeviceImageProvider* imageProvider,
         QObject* parent
-    )
-        : QObject(parent)
-          , m_deviceUseCase(deviceUseCase)
-          , m_screenCaptureService(std::make_unique<infrastructure::adb::ScreenCaptureService>(this))
-          , m_imageProvider(imageProvider)
-          , m_isMirroring(false)
-          , m_gridColumns(2)
-          , m_gridRows(2)
-          , m_captureInterval(100)
-          , m_captureQuality(80)
+    ) : QObject(parent)
+        , m_deviceUseCase(deviceUseCase)
+        , m_screenCaptureService(std::make_unique<infrastructure::adb::ScreenCaptureService>(this))
+        , m_isMirroring(false)
+        , m_gridColumns(2)
+        , m_gridRows(2)
+        , m_captureInterval(100)
+        , m_captureQuality(80)
+        , m_imageProvider(imageProvider)
     {
         connect(
             m_screenCaptureService.get(),
@@ -172,9 +171,12 @@ namespace presentation::view_models
 
     void MultiDeviceMirrorViewModel::onScreenCaptured(const QString& deviceId, const QImage& image)
     {
-        if (m_imageProvider) {
+        if (m_imageProvider)
+        {
             m_imageProvider->updateImage(deviceId, image);
-        } else {
+        }
+        else
+        {
             qWarning() << "Image provider is null!";
         }
         emit screenCaptured(deviceId);

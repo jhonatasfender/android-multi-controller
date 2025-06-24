@@ -4,41 +4,42 @@
 #include <QObject>
 #include <QString>
 #include <QFile>
-#include <QTextStream>
 #include <QDateTime>
 #include <QMutex>
 #include <QtLogging>
 
-class Logger : public QObject
+class Logger final : public QObject
 {
     Q_OBJECT
 
 public:
-    enum LogLevel {
+    enum LogLevel
+    {
         Debug = QtDebugMsg,
         Info = QtInfoMsg,
         Warning = QtWarningMsg,
         Critical = QtCriticalMsg,
         Fatal = QtFatalMsg
     };
+
     Q_ENUM(LogLevel)
 
     static Logger* getInstance();
-    
+
     void initialize(const QString& logFilePath = QString());
     void setLogLevel(LogLevel level);
     void setLogToFile(bool enabled);
     void setLogToConsole(bool enabled);
-    
+
     void log(LogLevel level, const QString& category, const QString& message);
     void log(LogLevel level, const QString& message);
-    
+
     void debug(const QString& category, const QString& message);
     void info(const QString& category, const QString& message);
     void warning(const QString& category, const QString& message);
     void critical(const QString& category, const QString& message);
     void fatal(const QString& category, const QString& message);
-    
+
     void debug(const QString& message);
     void info(const QString& message);
     void warning(const QString& message);
@@ -47,26 +48,26 @@ public:
 
 private:
     explicit Logger(QObject* parent = nullptr);
-    ~Logger();
-    
+    ~Logger() override;
+
     static void messageHandler(QtMsgType type, const QMessageLogContext& context, const QString& msg);
-    QString formatMessage(LogLevel level, const QString& category, const QString& message);
-    QString levelToString(LogLevel level);
-    
+    static QString formatMessage(LogLevel level, const QString& category, const QString& message);
+    static QString levelToString(LogLevel level);
+
     static Logger* m_instance;
     static QtMessageHandler m_originalHandler;
-    
+
     QFile m_logFile;
     QTextStream m_logStream;
     QMutex m_mutex;
-    
+
     LogLevel m_minLevel;
     bool m_logToFile;
     bool m_logToConsole;
     QString m_logFilePath;
-    
+
     void writeToFile(const QString& message);
-    void writeToConsole(const QString& message);
+    static void writeToConsole(const QString& message);
 };
 
 #define LOG_DEBUG(category, message) Logger::getInstance()->debug(category, message)

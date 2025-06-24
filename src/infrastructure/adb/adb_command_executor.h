@@ -21,11 +21,11 @@ namespace infrastructure::adb
         bool executeCommandAsync(
             const QString& deviceId,
             const QString& command,
-            const std::function<void(bool, const QString&)> callback
+            std::function<void(bool, const QString&)> callback
         ) override;
         bool executeScreenCaptureAsync(
             const QString& deviceId,
-            const std::function<void(bool, const QByteArray&)> callback
+            const std::function<void(bool, const QByteArray&)>& callback
         );
         bool startScreenCapture(const QString& deviceId) override;
         bool stopScreenCapture(const QString& deviceId) override;
@@ -36,7 +36,7 @@ namespace infrastructure::adb
         bool installApp(const QString& deviceId, const QString& apkPath) override;
         bool uninstallApp(const QString& deviceId, const QString& packageName) override;
         bool launchApp(const QString& deviceId, const QString& packageName) override;
-        void stopAllProcesses();
+        void stopAllProcesses() override;
 
     signals:
         void commandExecuted(const QString& deviceId, const QString& command, bool success, const QString& output);

@@ -34,7 +34,7 @@ namespace infrastructure::adb
         ServerStatus getServerStatus() const;
         QString getAdbVersion() const;
 
-        QString getWirelessDebuggingInstructions() const;
+        static QString getWirelessDebuggingInstructions();
 
         bool connectToDevice(const QString& deviceId);
         bool disconnectFromDevice(const QString& deviceId) const;

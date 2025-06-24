@@ -1,8 +1,6 @@
 #ifndef MULTI_DEVICE_MIRROR_VIEW_MODEL_H
 #define MULTI_DEVICE_MIRROR_VIEW_MODEL_H
 
-#include <QObject>
-#include <QImage>
 #include <memory>
 #include "../../use_case/device_management_use_case.h"
 #include "../../infrastructure/adb/screen_capture_service.h"
@@ -17,7 +15,7 @@ namespace presentation::view_models
     public:
         explicit MultiDeviceMirrorViewModel(
             const std::shared_ptr<use_case::DeviceManagementUseCase>& deviceUseCase,
-            presentation::DeviceImageProvider* imageProvider,
+            DeviceImageProvider* imageProvider,
             QObject* parent = nullptr
         );
 
@@ -64,7 +62,7 @@ namespace presentation::view_models
     private slots:
         void onScreenCaptured(const QString& deviceId, const QImage& image);
         void onCaptureStarted(const QString& deviceId);
-        void onCaptureStopped(const QString& deviceId);
+        static void onCaptureStopped(const QString& deviceId);
         void onCaptureError(const QString& deviceId, const QString& error);
         void onMultiDeviceCaptureStarted(const QList<QString>& deviceIds);
         void onMultiDeviceCaptureStopped();
@@ -80,7 +78,7 @@ namespace presentation::view_models
         int m_captureInterval;
         int m_captureQuality;
         QString m_errorMessage;
-        presentation::DeviceImageProvider* m_imageProvider;
+        DeviceImageProvider* m_imageProvider;
 
         void updateDevices();
         void startScreenCaptureForConnectedDevices();

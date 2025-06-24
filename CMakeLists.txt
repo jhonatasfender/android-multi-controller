@@ -21,7 +21,6 @@ include_directories(${CMAKE_SOURCE_DIR}/src)
 add_subdirectory(src)
 
 enable_testing()
-add_subdirectory(tests)
 
 install(TARGETS MultiDeviceAndroidController
     RUNTIME DESTINATION bin

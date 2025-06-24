@@ -20,20 +20,51 @@ namespace presentation
 
         m_imageProvider = new DeviceImageProvider();
         m_deviceListViewModel = new view_models::DeviceListViewModel(m_deviceUseCase, this);
-        m_multiDeviceMirrorViewModel = new view_models::MultiDeviceMirrorViewModel(m_deviceUseCase, m_imageProvider, this);
+        m_multiDeviceMirrorViewModel = new view_models::MultiDeviceMirrorViewModel(
+            m_deviceUseCase,
+            m_imageProvider,
+            this
+        );
 
-        connect(m_deviceListViewModel, &view_models::DeviceListViewModel::devicesChanged,
-                m_multiDeviceMirrorViewModel, &view_models::MultiDeviceMirrorViewModel::onDevicesUpdated);
+        connect(
+            m_deviceListViewModel,
+            &view_models::DeviceListViewModel::devicesChanged,
+            m_multiDeviceMirrorViewModel,
+            &view_models::MultiDeviceMirrorViewModel::onDevicesUpdated
+        );
     }
 
-    void MainWindow::initialize(QQmlApplicationEngine& engine)
+    void MainWindow::initialize(QQmlApplicationEngine& engine) const
     {
         engine.addImageProvider("deviceimages", m_imageProvider);
-        qmlRegisterType<presentation::view_models::DeviceListViewModel>("DeviceController", 1, 0, "DeviceListViewModel");
-        qmlRegisterType<presentation::view_models::MultiDeviceMirrorViewModel>("DeviceController", 1, 0, "MultiDeviceMirrorViewModel");
-        qmlRegisterUncreatableType<core::entities::Device>("DeviceController", 1, 0, "Device", "Device objects are written in C++ and passed to QML");
-        qmlRegisterUncreatableMetaObject(core::entities::staticMetaObject, "DeviceController", 1, 0, "DeviceStatus", "DeviceStatus is an enum and cannot be instantiated");
-        
+        qmlRegisterType<view_models::DeviceListViewModel>(
+            "DeviceController",
+            1,
+            0,
+            "DeviceListViewModel"
+        );
+        qmlRegisterType<view_models::MultiDeviceMirrorViewModel>(
+            "DeviceController",
+            1,
+            0,
+            "MultiDeviceMirrorViewModel"
+        );
+        qmlRegisterUncreatableType<core::entities::Device>(
+            "DeviceController",
+            1,
+            0,
+            "Device",
+            "Device objects are written in C++ and passed to QML"
+        );
+        qmlRegisterUncreatableMetaObject(
+            core::entities::staticMetaObject,
+            "DeviceController",
+            1,
+            0,
+            "DeviceStatus",
+            "DeviceStatus is an enum and cannot be instantiated"
+        );
+
         engine.rootContext()->setContextProperty("deviceListViewModel", m_deviceListViewModel);
         engine.rootContext()->setContextProperty("multiDeviceMirrorViewModel", m_multiDeviceMirrorViewModel);
     }

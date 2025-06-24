@@ -1,4 +1,5 @@
 #include "automation_script.h"
+#include <utility>
 
 namespace core::entities
 {
@@ -7,10 +8,14 @@ namespace core::entities
     }
 
     AutomationScript::AutomationScript(
-        const QString& id,
-        const QString& name,
+        QString id,
+        QString name,
         QObject* parent
-    ) : QObject(parent), m_id(id), m_name(name), m_enabled(true)
+    ) : QObject(parent), m_id(std::move(id)), m_name(std::move(name)), m_enabled(true)
+    {
+    }
+
+    AutomationScript::AutomationScript(const QString& id, const QString& name, QObject* parent)
     {
     }
 

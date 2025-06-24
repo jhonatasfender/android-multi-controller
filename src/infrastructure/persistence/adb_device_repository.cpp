@@ -1,10 +1,6 @@
 #include "adb_device_repository.h"
-#include <QProcess>
-#include <QRegularExpression>
-#include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
-#include <QFile>
 #include <QDir>
 #include <QStandardPaths>
 
@@ -23,20 +19,23 @@ namespace infrastructure::persistence
                 this,
                 &AdbDeviceRepository::onDevicesUpdated
             );
-            connect(m_adbService.get(),
-                    &adb::AdbService::deviceConnected,
-                    this,
-                    &AdbDeviceRepository::onDeviceConnected
+            connect(
+                m_adbService.get(),
+                &adb::AdbService::deviceConnected,
+                this,
+                &AdbDeviceRepository::onDeviceConnected
             );
-            connect(m_adbService.get(),
-                    &adb::AdbService::deviceDisconnected,
-                    this,
-                    &AdbDeviceRepository::onDeviceDisconnected
+            connect(
+                m_adbService.get(),
+                &adb::AdbService::deviceDisconnected,
+                this,
+                &AdbDeviceRepository::onDeviceDisconnected
             );
-            connect(m_adbService.get(),
-                    &adb::AdbService::errorOccurred,
-                    this,
-                    &AdbDeviceRepository::onErrorOccurred
+            connect(
+                m_adbService.get(),
+                &adb::AdbService::errorOccurred,
+                this,
+                &AdbDeviceRepository::onErrorOccurred
             );
         }
     }
@@ -148,7 +147,7 @@ namespace infrastructure::persistence
         {
             return true;
         }
-        
+
         if (m_adbService && m_adbService->connectToDevice(id))
         {
             return refreshDeviceStatus(id);
@@ -194,8 +193,7 @@ namespace infrastructure::persistence
 
     void AdbDeviceRepository::onDeviceDisconnected(const QString& deviceId)
     {
-        auto device = getDeviceById(deviceId);
-        if (device)
+        if (const auto device = getDeviceById(deviceId))
         {
             device->setStatus(core::entities::DeviceStatus::Offline);
             device->setConnected(false);

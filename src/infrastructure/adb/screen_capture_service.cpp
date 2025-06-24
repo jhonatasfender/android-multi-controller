@@ -1,6 +1,5 @@
 #include "screen_capture_service.h"
 #include "adb_command_executor.h"
-#include <QProcess>
 #include <QDir>
 #include <QStandardPaths>
 #include <QTimer>
@@ -9,16 +8,25 @@
 
 namespace infrastructure::adb
 {
-    ScreenCaptureService::ScreenCaptureService(QObject* parent)
-        : QObject(parent)
-        , m_adbExecutor(std::make_unique<AdbCommandExecutor>(this))
+    ScreenCaptureService::ScreenCaptureService(
+        QObject* parent
+    ) : QObject(parent), m_adbExecutor(std::make_unique<AdbCommandExecutor>(this))
     {
-        connect(m_adbExecutor.get(), &AdbCommandExecutor::commandExecuted,
-                this, &ScreenCaptureService::onAdbCommandFinished);
-        connect(m_adbExecutor.get(), &AdbCommandExecutor::errorOccurred,
-                this, [this](const QString& deviceId, const QString& error) {
-                    emit captureError(deviceId, error);
-                });
+        connect(
+            m_adbExecutor.get(),
+            &AdbCommandExecutor::commandExecuted,
+            this,
+            &ScreenCaptureService::onAdbCommandFinished
+        );
+        connect(
+            m_adbExecutor.get(),
+            &AdbCommandExecutor::errorOccurred,
+            this,
+            [this](const QString& deviceId, const QString& error)
+            {
+                emit captureError(deviceId, error);
+            }
+        );
     }
 
     ScreenCaptureService::~ScreenCaptureService()
@@ -30,7 +38,6 @@ namespace infrastructure::adb
     {
         if (isDeviceCapturing(deviceId))
         {
-            qWarning() << "Device" << deviceId << "is already being captured";
             return false;
         }
 
@@ -43,19 +50,25 @@ namespace infrastructure::adb
         m_captureQualities[deviceId] = 80;
         m_captureResolutions[deviceId] = QSize(1080, 1920);
 
-        auto timer = new QTimer(this);
+        const auto timer = new QTimer(this);
         timer->setInterval(intervalMs);
         timer->setSingleShot(false);
-        
-        connect(timer, &QTimer::timeout, this, [this, deviceId]() {
-            executeScreenCapture(deviceId);
-        });
+
+        connect(
+            timer,
+            &QTimer::timeout,
+            this,
+            [this, deviceId]()
+            {
+                executeScreenCapture(deviceId);
+            }
+        );
 
         m_captureTimers[deviceId] = timer;
         timer->start();
 
         emit captureStarted(deviceId);
-        
+
         return true;
     }
 
@@ -68,14 +81,14 @@ namespace infrastructure::adb
 
         cleanupDevice(deviceId);
         emit captureStopped(deviceId);
-        
+
         return true;
     }
 
-    bool ScreenCaptureService::startMultiDeviceCapture(const QList<QString>& deviceIds, int intervalMs)
+    bool ScreenCaptureService::startMultiDeviceCapture(const QList<QString>& deviceIds, const int intervalMs)
     {
         bool allStarted = true;
-        
+
         for (const QString& deviceId : deviceIds)
         {
             if (!startScreenCapture(deviceId, intervalMs))
@@ -95,7 +108,7 @@ namespace infrastructure::adb
     void ScreenCaptureService::stopAllCaptures()
     {
         const auto deviceIds = m_captureTimers.keys();
-        
+
         for (const QString& deviceId : deviceIds)
         {
             stopScreenCapture(deviceId);
@@ -117,7 +130,7 @@ namespace infrastructure::adb
     QList<QString> ScreenCaptureService::getCapturingDevices() const
     {
         QList<QString> devices;
-        
+
         for (auto it = m_captureTimers.begin(); it != m_captureTimers.end(); ++it)
         {
             if (it.value()->isActive())
@@ -125,7 +138,7 @@ namespace infrastructure::adb
                 devices.append(it.key());
             }
         }
-        
+
         return devices;
     }
 
@@ -142,7 +155,7 @@ namespace infrastructure::adb
         }
 
         m_captureIntervals[deviceId] = intervalMs;
-        
+
         if (auto timer = m_captureTimers.value(deviceId))
         {
             timer->setInterval(intervalMs);
@@ -155,7 +168,7 @@ namespace infrastructure::adb
         {
             return;
         }
-        
+
         m_captureQualities[deviceId] = quality;
     }
 
@@ -165,7 +178,7 @@ namespace infrastructure::adb
         {
             return;
         }
-        
+
         m_captureResolutions[deviceId] = resolution;
     }
 
@@ -173,7 +186,12 @@ namespace infrastructure::adb
     {
     }
 
-    void ScreenCaptureService::onAdbCommandFinished(const QString& deviceId, const QString& command, bool success, const QString& output)
+    void ScreenCaptureService::onAdbCommandFinished(
+        const QString& deviceId,
+        const QString& command,
+        const bool success,
+        const QString& output
+    )
     {
         if (!success)
         {
@@ -193,26 +211,28 @@ namespace infrastructure::adb
 
     void ScreenCaptureService::executeScreenCapture(const QString& deviceId)
     {
-        m_adbExecutor->executeScreenCaptureAsync(deviceId, 
-            [this, deviceId](bool success, const QByteArray& output) {
+        m_adbExecutor->executeScreenCaptureAsync(
+            deviceId,
+            [this, deviceId](const bool success, const QByteArray& output)
+            {
                 if (success)
                 {
                     processCapturedImage(deviceId, output);
                 }
                 else
                 {
-                    emit captureError(deviceId, "Failed to capture screen");
+                    emit captureError(deviceId, "Didn't capture screen");
                 }
-            });
+            }
+        );
     }
 
     void ScreenCaptureService::processCapturedImage(const QString& deviceId, const QByteArray& imageData)
     {
-        QImage image;
-        if (image.loadFromData(imageData))
+        if (QImage image; image.loadFromData(imageData))
         {
-            const QSize targetResolution = m_captureResolutions.value(deviceId, QSize(1080, 1920));
-            if (image.size() != targetResolution)
+            if (const QSize targetResolution = m_captureResolutions.value(deviceId, QSize(1080, 1920)); image.size() !=
+                targetResolution)
             {
                 image = image.scaled(targetResolution, Qt::KeepAspectRatio, Qt::SmoothTransformation);
             }
@@ -222,14 +242,13 @@ namespace infrastructure::adb
         }
         else
         {
-            qWarning() << "Failed to load image data for device:" << deviceId << "data size:" << imageData.size();
-            emit captureError(deviceId, "Failed to load captured image data");
+            emit captureError(deviceId, "Didn't load captured image data");
         }
     }
 
     void ScreenCaptureService::cleanupDevice(const QString& deviceId)
     {
-        if (auto timer = m_captureTimers.take(deviceId))
+        if (const auto timer = m_captureTimers.take(deviceId))
         {
             timer->stop();
             timer->deleteLater();
@@ -240,4 +259,4 @@ namespace infrastructure::adb
         m_captureQualities.remove(deviceId);
         m_captureResolutions.remove(deviceId);
     }
-} 
+}

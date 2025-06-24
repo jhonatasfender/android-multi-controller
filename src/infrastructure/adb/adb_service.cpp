@@ -84,7 +84,7 @@ namespace infrastructure::adb
         return executeAdbCommand(QStringList() << "version");
     }
 
-    QString AdbService::getWirelessDebuggingInstructions() const
+    QString AdbService::getWirelessDebuggingInstructions()
     {
         return QString(
             "To enable wireless debugging:\n"
@@ -93,100 +93,102 @@ namespace infrastructure::adb
             "3. Tap on 'Wireless debugging' to see pairing options\n"
             "4. Use 'Pair device with pairing code' or 'Pair device with QR code'\n"
             "5. Follow the on-screen instructions to pair your computer\n"
-            "6. Once paired, use the IP address and port shown on the device"
+            "6. Once paired, use the IP address and port shown on the device."
         );
     }
 
     bool AdbService::connectToDevice(const QString& deviceId)
     {
-        const DeviceConnectionType connectionType = getDeviceConnectionType(deviceId);
-        
-        switch (connectionType)
+        switch (getDeviceConnectionType(deviceId))
         {
-            case DeviceConnectionType::WiFi:
+        case DeviceConnectionType::WiFi:
             {
                 const QString output = executeAdbCommand(QStringList() << "connect" << deviceId);
                 const bool success = output.contains("connected to") || output.contains("already connected");
                 if (!success)
                 {
-                    const QString errorMsg = QString("Failed to connect to Wi-Fi device '%1': %2").arg(deviceId, output.trimmed());
+                    const QString errorMsg = QString("Failed to connect to Wi-Fi device '%1': %2")
+                        .arg(deviceId, output.trimmed());
                     emit errorOccurred(errorMsg);
                 }
                 return success;
             }
-            
-            case DeviceConnectionType::WirelessDebugging:
+
+        case DeviceConnectionType::WirelessDebugging:
             {
                 QString connectionString = deviceId;
-                
+
                 if (deviceId.contains("._adb-tls-connect._tcp"))
                 {
                     const QString output = executeAdbCommand(QStringList() << "connect" << deviceId);
-                    
+
                     const bool success = output.contains("connected to") || output.contains("already connected");
                     if (!success)
                     {
-                        const QString altOutput = executeAdbCommand(QStringList() << "connect" << deviceId << "--timeout" << "5000");
-                        
-                        const bool altSuccess = altOutput.contains("connected to") || altOutput.contains("already connected");
+                        const QString altOutput = executeAdbCommand(
+                            QStringList() << "connect" << deviceId << "--timeout" << "5000");
+
+                        const bool altSuccess = altOutput.contains("connected to") || altOutput.contains(
+                            "already connected");
                         if (!altSuccess)
                         {
-                            const QString errorMsg = QString("Failed to connect to wireless device '%1'. Make sure wireless debugging is enabled and the device is discoverable. Try using the IP address and port format (e.g., 192.168.1.100:5555).").arg(deviceId);
+                            const QString errorMsg = QString(
+                                    "Didn't connect to wireless device '%1'. Make sure wireless debugging is enabled, and the device is discoverable. Try using the IP address and port format (e.g., 192.168.1.100:5555)."
+                                )
+                                .arg(deviceId);
                             emit errorOccurred(errorMsg);
                         }
                         return altSuccess;
                     }
                     return success;
                 }
-                else if (deviceId.contains("._adb._tcp"))
+                if (deviceId.contains("._adb._tcp"))
                 {
                     const QString output = executeAdbCommand(QStringList() << "connect" << deviceId);
-                    
+
                     const bool success = output.contains("connected to") || output.contains("already connected");
                     if (!success)
                     {
-                        const QString errorMsg = QString("Failed to connect to wireless device '%1': %2").arg(deviceId, output.trimmed());
+                        const QString errorMsg = QString("Didn't connect to wireless device '%1': %2").arg(
+                            deviceId, output.trimmed());
                         emit errorOccurred(errorMsg);
                     }
                     return success;
                 }
-                else
+                const QString output = executeAdbCommand(QStringList() << "connect" << deviceId);
+
+                const bool success = output.contains("connected to") || output.contains("already connected");
+                if (!success)
                 {
-                    const QString output = executeAdbCommand(QStringList() << "connect" << deviceId);
-                    
-                    const bool success = output.contains("connected to") || output.contains("already connected");
-                    if (!success)
-                    {
-                        const QString errorMsg = QString("Failed to connect to wireless device '%1': %2").arg(deviceId, output.trimmed());
-                        emit errorOccurred(errorMsg);
-                    }
-                    return success;
+                    const QString errorMsg = QString("Didn't connect to wireless device '%1': %2").arg(
+                        deviceId, output.trimmed());
+                    emit errorOccurred(errorMsg);
                 }
+                return success;
             }
-            
-            case DeviceConnectionType::USB:
+
+        case DeviceConnectionType::USB:
             {
                 if (isDeviceConnected(deviceId))
                 {
                     return true;
                 }
-                else
-                {
-                    const QString errorMsg = QString("USB device '%1' is not currently connected").arg(deviceId);
-                    emit errorOccurred(errorMsg);
-                    return false;
-                }
+
+                const QString errorMsg = QString("USB device '%1' is not currently connected").arg(deviceId);
+                emit errorOccurred(errorMsg);
+                return false;
             }
-            
-            case DeviceConnectionType::Unknown:
-            default:
+
+        case DeviceConnectionType::Unknown:
+        default:
             {
                 const QString output = executeAdbCommand(QStringList() << "connect" << deviceId);
-                
+
                 const bool success = output.contains("connected to") || output.contains("already connected");
                 if (!success)
                 {
-                    const QString errorMsg = QString("Failed to connect to device '%1' (unknown type): %2").arg(deviceId, output.trimmed());
+                    const QString errorMsg = QString("Didn't connect to device '%1' (unknown type): %2").arg(
+                        deviceId, output.trimmed());
                     emit errorOccurred(errorMsg);
                 }
                 return success;
@@ -202,21 +204,19 @@ namespace infrastructure::adb
 
     AdbService::DeviceConnectionType AdbService::getDeviceConnectionType(const QString& deviceId)
     {
-        const QRegularExpression ipRegex("^(\\d{1,3}\\.){3}\\d{1,3}(:\\d+)?$");
-        if (ipRegex.match(deviceId).hasMatch())
+        if (const QRegularExpression ipRegex("^(\\d{1,3}\\.){3}\\d{1,3}(:\\d+)?$"); ipRegex.match(deviceId).hasMatch())
         {
             return DeviceConnectionType::WiFi;
         }
 
-        if (deviceId.contains("._adb-tls-connect._tcp") || 
+        if (deviceId.contains("._adb-tls-connect._tcp") ||
             deviceId.contains("._adb._tcp") ||
             deviceId.contains("._adb-tls-pairing._tcp"))
         {
             return DeviceConnectionType::WirelessDebugging;
         }
 
-        const QRegularExpression usbRegex("^[A-Za-z0-9]+$");
-        if (usbRegex.match(deviceId).hasMatch())
+        if (const QRegularExpression usbRegex("^[A-Za-z0-9]+$"); usbRegex.match(deviceId).hasMatch())
         {
             return DeviceConnectionType::USB;
         }
@@ -259,11 +259,15 @@ namespace infrastructure::adb
         for (const QStringList lines = output.split('\n', Qt::SkipEmptyParts); const QString& line : lines)
         {
             if (line.startsWith("List of devices") || line.trimmed().isEmpty())
+            {
                 continue;
+            }
 
             QStringList tokens = line.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
             if (tokens.size() < 2)
+            {
                 continue;
+            }
 
             QString id = tokens[0];
             QString status = tokens[1];
@@ -272,11 +276,17 @@ namespace infrastructure::adb
             for (const QString& token : tokens.mid(2))
             {
                 if (token.startsWith("product:"))
+                {
                     product = token.section(':', 1);
+                }
                 else if (token.startsWith("model:"))
+                {
                     model = token.section(':', 1);
+                }
                 else if (token.startsWith("device:"))
+                {
                     deviceName = token.section(':', 1);
+                }
             }
 
             auto device = std::make_shared<core::entities::Device>(id, deviceName.isEmpty() ? id : deviceName);

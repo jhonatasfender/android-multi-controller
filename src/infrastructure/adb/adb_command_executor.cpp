@@ -21,12 +21,12 @@ namespace infrastructure::adb
 
     AdbCommandExecutor::~AdbCommandExecutor()
     {
-        for (auto process : m_processes.values())
+        for (const auto process : m_processes.values())
         {
             if (process->state() != QProcess::NotRunning)
             {
                 process->terminate();
-                
+
                 if (!process->waitForFinished(2000))
                 {
                     process->kill();
@@ -55,8 +55,8 @@ namespace infrastructure::adb
         const std::function<void(bool, const QString&)> callback
     )
     {
-        auto process = new QProcess(this);
-        
+        const auto process = new QProcess(this);
+
         connect(process, &QProcess::finished, this, &AdbCommandExecutor::onProcessFinished);
         connect(process, &QProcess::errorOccurred, this, &AdbCommandExecutor::onProcessError);
 
@@ -79,38 +79,41 @@ namespace infrastructure::adb
 
     bool AdbCommandExecutor::executeScreenCaptureAsync(
         const QString& deviceId,
-        const std::function<void(bool, const QByteArray&)> callback
+        const std::function<void(bool, const QByteArray&)>& callback
     )
     {
         QProcess process;
         QStringList arguments;
         arguments << "-s" << deviceId << "exec-out" << "screencap -p";
-        
+
         process.start(m_adbPath, arguments);
-        
-        if (!process.waitForStarted()) {
+
+        if (!process.waitForStarted())
+        {
             callback(false, QByteArray());
             return false;
         }
-        
-        if (!process.waitForFinished(30000)) {
+
+        if (!process.waitForFinished(30000))
+        {
             process.kill();
             callback(false, QByteArray());
             return false;
         }
-        
+
         const QByteArray output = process.readAllStandardOutput();
         const QString error = process.readAllStandardError();
         const int exitCode = process.exitCode();
-        
+
         const bool success = exitCode == 0 && !output.isEmpty();
-        
-        if (callback) {
+
+        if (callback)
+        {
             callback(success, success ? output : QByteArray());
         }
-        
+
         emit commandExecuted(deviceId, "screencap -p", success, success ? "Image captured" : error);
-        
+
         return success;
     }
 
@@ -177,7 +180,7 @@ namespace infrastructure::adb
 
     void AdbCommandExecutor::onProcessFinished(const int exitCode, QProcess::ExitStatus exitStatus)
     {
-        auto process = qobject_cast<QProcess*>(sender());
+        const auto process = qobject_cast<QProcess*>(sender());
         if (!process)
         {
             return;
@@ -191,9 +194,8 @@ namespace infrastructure::adb
 
         const QString deviceId = m_deviceIds.value(process);
         const QString command = m_commands.value(process);
-        const auto callback = m_callbacks.value(process);
 
-        if (callback)
+        if (const auto callback = m_callbacks.value(process))
         {
             callback(success, result);
         }
@@ -205,7 +207,7 @@ namespace infrastructure::adb
 
     void AdbCommandExecutor::onProcessError(const QProcess::ProcessError error)
     {
-        auto process = qobject_cast<QProcess*>(sender());
+        const auto process = qobject_cast<QProcess*>(sender());
         if (!process)
         {
             return;
@@ -213,9 +215,8 @@ namespace infrastructure::adb
 
         const QString errorMsg = QString("Process error: %1").arg(error);
         const QString deviceId = m_deviceIds.value(process);
-        const auto callback = m_callbacks.value(process);
 
-        if (callback)
+        if (const auto callback = m_callbacks.value(process))
         {
             callback(false, errorMsg);
         }
@@ -232,13 +233,11 @@ namespace infrastructure::adb
             return;
         }
 
-        const int timeout = 15000;
-        
         if (process->state() != QProcess::NotRunning)
         {
             process->terminate();
-            
-            if (!process->waitForFinished(timeout)) 
+
+            if (constexpr int timeout = 15000; !process->waitForFinished(timeout))
             {
                 process->kill();
                 process->waitForFinished(5000);
@@ -284,7 +283,7 @@ namespace infrastructure::adb
             if (process->state() != QProcess::NotRunning)
             {
                 process->terminate();
-                
+
                 if (!process->waitForFinished(1000))
                 {
                     process->kill();

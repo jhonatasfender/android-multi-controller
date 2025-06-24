@@ -1,7 +1,6 @@
 #ifndef SCREEN_CAPTURE_SERVICE_H
 #define SCREEN_CAPTURE_SERVICE_H
 
-#include <QObject>
 #include <QTimer>
 #include <QImage>
 #include <QMap>
@@ -40,7 +39,7 @@ namespace infrastructure::adb
         void multiDeviceCaptureStopped();
 
     private slots:
-        void onCaptureTimer();
+        static void onCaptureTimer();
         void onAdbCommandFinished(const QString& deviceId, const QString& command, bool success, const QString& output);
 
     private:

@@ -1,27 +1,31 @@
 #include "device_image_provider.h"
 #include <QPainter>
 
-namespace presentation {
-    DeviceImageProvider::DeviceImageProvider() : QQuickImageProvider(QQuickImageProvider::Image)
+namespace presentation
+{
+    DeviceImageProvider::DeviceImageProvider() : QQuickImageProvider(Image)
     {
     }
 
     QImage DeviceImageProvider::requestImage(const QString& id, QSize* size, const QSize& requestedSize)
     {
         QMutexLocker locker(&m_mutex);
-        
+
         QString deviceId = id;
-        int queryIndex = deviceId.indexOf('?');
-        if (queryIndex != -1) {
+        if (const int queryIndex = deviceId.indexOf('?'); queryIndex != -1)
+        {
             deviceId = deviceId.left(queryIndex);
         }
-        
-        if (m_images.contains(deviceId)) {
+
+        if (m_images.contains(deviceId))
+        {
             QImage img = m_images.value(deviceId);
-            if (size) {
+            if (size)
+            {
                 *size = img.size();
             }
-            if(requestedSize.isValid() && (img.size() != requestedSize)) {
+            if (requestedSize.isValid() && (img.size() != requestedSize))
+            {
                 QImage scaledImg = img.scaled(requestedSize, Qt::KeepAspectRatio, Qt::SmoothTransformation);
                 return scaledImg;
             }
@@ -35,11 +39,12 @@ namespace presentation {
         painter.setPen(Qt::white);
         painter.drawText(defaultImg.rect(), Qt::AlignCenter, "No Image\n" + deviceId);
         painter.end();
-        
-        if (size) {
+
+        if (size)
+        {
             *size = defaultImg.size();
         }
-        
+
         return defaultImg;
     }
 
@@ -47,7 +52,7 @@ namespace presentation {
     {
         QMutexLocker locker(&m_mutex);
         m_images[deviceId] = image;
-        
+
         m_cacheVersions[deviceId] = m_cacheVersions.value(deviceId, 0) + 1;
     }
 
@@ -76,4 +81,4 @@ namespace presentation {
         QMutexLocker locker(&m_mutex);
         m_cacheVersions[deviceId] = m_cacheVersions.value(deviceId, 0) + 1;
     }
-} 
+}

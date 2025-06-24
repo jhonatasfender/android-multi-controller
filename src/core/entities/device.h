@@ -19,6 +19,7 @@ namespace core::entities
 
     public:
         explicit Device(QObject* parent = nullptr);
+        Device(QString id, QString name, QObject* parent);
         Device(const QString& id, const QString& name, QObject* parent = nullptr);
 
         QString id() const { return m_id; }
