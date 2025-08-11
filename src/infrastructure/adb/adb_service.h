@@ -1,6 +1,11 @@
 #ifndef ADB_SERVICE_H
 #define ADB_SERVICE_H
 
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QList>
+#include <QProcess>
 #include <memory>
 #include "adb_command_executor.h"
 #include "../../core/entities/device.h"
@@ -23,7 +28,6 @@ namespace infrastructure::adb
         };
 
         Q_ENUM(ServerStatus)
-
 
         QList<std::shared_ptr<core::entities::Device>> getConnectedDevices();
         bool isDeviceConnected(const QString& deviceId);

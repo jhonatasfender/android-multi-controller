@@ -77,57 +77,6 @@ namespace infrastructure::adb
         return process->state() != QProcess::NotRunning;
     }
 
-    bool AdbCommandExecutor::executeScreenCaptureAsync(
-        const QString& deviceId,
-        const std::function<void(bool, const QByteArray&)>& callback
-    )
-    {
-        QProcess process;
-        QStringList arguments;
-        arguments << "-s" << deviceId << "exec-out" << "screencap -p";
-
-        process.start(m_adbPath, arguments);
-
-        if (!process.waitForStarted())
-        {
-            callback(false, QByteArray());
-            return false;
-        }
-
-        if (!process.waitForFinished(30000))
-        {
-            process.kill();
-            callback(false, QByteArray());
-            return false;
-        }
-
-        const QByteArray output = process.readAllStandardOutput();
-        const QString error = process.readAllStandardError();
-        const int exitCode = process.exitCode();
-
-        const bool success = exitCode == 0 && !output.isEmpty();
-
-        if (callback)
-        {
-            callback(success, success ? output : QByteArray());
-        }
-
-        emit commandExecuted(deviceId, "screencap -p", success, success ? "Image captured" : error);
-
-        return success;
-    }
-
-    bool AdbCommandExecutor::startScreenCapture(const QString& deviceId)
-    {
-        const QString command = "screencap -p /sdcard/screenshot.png";
-        return executeCommand(deviceId, command);
-    }
-
-    bool AdbCommandExecutor::stopScreenCapture(const QString& deviceId)
-    {
-        return true;
-    }
-
     bool AdbCommandExecutor::sendTouchEvent(const QString& deviceId, const int x, const int y, int action)
     {
         const QString command = QString("input tap %1 %2").arg(x).arg(y);

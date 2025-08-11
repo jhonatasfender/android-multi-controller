@@ -34,24 +34,6 @@ namespace presentation::view_models
         return false;
     }
 
-    bool DeviceControlViewModel::startScreenCapture(const QString& deviceId) const
-    {
-        if (m_useCase)
-        {
-            return m_useCase->startScreenCapture(deviceId);
-        }
-        return false;
-    }
-
-    bool DeviceControlViewModel::stopScreenCapture(const QString& deviceId) const
-    {
-        if (m_useCase)
-        {
-            return m_useCase->stopScreenCapture(deviceId);
-        }
-        return false;
-    }
-
     bool DeviceControlViewModel::sendTouchEvent(
         const QString& deviceId,
         const int x,

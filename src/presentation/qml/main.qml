@@ -113,6 +113,7 @@ ApplicationWindow {
             appStyle: mainWindow.appStyle
             isLoading: deviceListViewModel ? deviceListViewModel.isLoading : false
             errorMessage: deviceListViewModel ? deviceListViewModel.errorMessage : ""
+            multiDeviceMirrorViewModel: multiDeviceMirrorViewModel
         }
     }
 

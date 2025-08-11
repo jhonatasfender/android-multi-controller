@@ -9,6 +9,7 @@ Item {
     property variant appStyle: null
     property bool isLoading: false
     property string errorMessage: ""
+    property var multiDeviceMirrorViewModel: null
 
     Layout.fillWidth: true
     Layout.fillHeight: true
@@ -61,6 +62,7 @@ Item {
         Loader {
             source: "qrc:/qml/components/MultiDeviceMirrorView.qml"
             property var appStyle: mainContentArea.appStyle
+            property var multiDeviceMirrorViewModel: mainContentArea.multiDeviceMirrorViewModel
         }
     }
 
@@ -74,7 +76,8 @@ Item {
 
     function navigateToMultiDeviceMirror() {
         var multiDeviceMirrorView = multiDeviceMirrorViewComponent.createObject(mainStack, {
-            "appStyle": mainContentArea.appStyle
+            "appStyle": mainContentArea.appStyle,
+            "multiDeviceMirrorViewModel": mainContentArea.multiDeviceMirrorViewModel
         })
         mainStack.push(multiDeviceMirrorView)
     }

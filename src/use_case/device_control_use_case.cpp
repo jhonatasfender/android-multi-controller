@@ -18,23 +18,7 @@ namespace use_case
         return false;
     }
 
-    bool DeviceControlUseCase::startScreenCapture(const QString& deviceId) const
-    {
-        if (m_executor)
-        {
-            return m_executor->startScreenCapture(deviceId);
-        }
-        return false;
-    }
 
-    bool DeviceControlUseCase::stopScreenCapture(const QString& deviceId) const
-    {
-        if (m_executor)
-        {
-            return m_executor->stopScreenCapture(deviceId);
-        }
-        return false;
-    }
 
     bool DeviceControlUseCase::sendTouchEvent(const QString& deviceId, const int x, const int y, const int action) const
     {

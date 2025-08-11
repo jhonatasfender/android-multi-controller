@@ -18,8 +18,7 @@ namespace use_case
         );
 
         bool executeCommand(const QString& deviceId, const QString& command) const;
-        bool startScreenCapture(const QString& deviceId) const;
-        bool stopScreenCapture(const QString& deviceId) const;
+
         bool sendTouchEvent(const QString& deviceId, int x, int y, int action) const;
         bool sendKeyEvent(const QString& deviceId, int keyCode, int action) const;
 

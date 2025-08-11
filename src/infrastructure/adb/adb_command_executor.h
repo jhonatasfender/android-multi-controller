@@ -23,12 +23,7 @@ namespace infrastructure::adb
             const QString& command,
             std::function<void(bool, const QString&)> callback
         ) override;
-        bool executeScreenCaptureAsync(
-            const QString& deviceId,
-            const std::function<void(bool, const QByteArray&)>& callback
-        );
-        bool startScreenCapture(const QString& deviceId) override;
-        bool stopScreenCapture(const QString& deviceId) override;
+
         bool sendTouchEvent(const QString& deviceId, int x, int y, int action) override;
         bool sendKeyEvent(const QString& deviceId, int keyCode, int action) override;
         bool pushFile(const QString& deviceId, const QString& localPath, const QString& remotePath) override;

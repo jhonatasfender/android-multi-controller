@@ -17,6 +17,7 @@
         <file>components/Sidebar.qml</file>
         <file>components/MainContentArea.qml</file>
         <file>components/MultiDeviceMirrorView.qml</file>
+        <file>components/StreamingGrid.qml</file>
         <file>components/DeviceMirrorCard.qml</file>
     </qresource>
     <qresource prefix="/icons">

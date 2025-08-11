@@ -17,8 +17,7 @@ namespace presentation::view_models
         );
 
         Q_INVOKABLE bool executeCommand(const QString& deviceId, const QString& command) const;
-        Q_INVOKABLE bool startScreenCapture(const QString& deviceId) const;
-        Q_INVOKABLE bool stopScreenCapture(const QString& deviceId) const;
+
         Q_INVOKABLE bool sendTouchEvent(const QString& deviceId, int x, int y, int action) const;
         Q_INVOKABLE bool sendKeyEvent(const QString& deviceId, int keyCode, int action) const;
 

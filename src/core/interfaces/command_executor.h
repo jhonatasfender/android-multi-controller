@@ -18,8 +18,7 @@ namespace core::interfaces
             std::function<void(bool, const QString&)> callback
         ) = 0;
 
-        virtual bool startScreenCapture(const QString& deviceId) = 0;
-        virtual bool stopScreenCapture(const QString& deviceId) = 0;
+
         virtual bool sendTouchEvent(const QString& deviceId, int x, int y, int action) = 0;
         virtual bool sendKeyEvent(const QString& deviceId, int keyCode, int action) = 0;
 
