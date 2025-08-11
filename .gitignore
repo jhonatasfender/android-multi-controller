@@ -92,4 +92,23 @@ docs/_build/
 
 # Backup files
 *.bak
-*.backup 
+*.backup
+
+# Android NDK Build Files
+android_server/libs/
+android_server/obj/
+android_server/jni/libs/
+android_server/jni/obj/
+android_server/local.properties
+
+# Android generated files
+*.apk
+*.aab
+*.ap_
+*.dex
+*.class
+
+# NDK build artifacts
+**/.externalNativeBuild/
+**/ndkBuild/
+**/.ndkBuild/ 
