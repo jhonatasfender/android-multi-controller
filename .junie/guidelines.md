@@ -62,7 +62,7 @@ Planejamento de módulos futuros (ainda não extraídos):
 - Commits: mensagens objetivas; preferir inglês nas mensagens e código; comentários podem ser PT-BR quando fizer sentido para documentação interna.
 
 ## Roadmap Inicial
-1. Criar .junie/guidelines.md com visão do projeto. (feito)
+1. Criar. junie/guidelines.md com visão do projeto. (feito)
 2. Bootstrap do projeto Kotlin + Compose Desktop com tema escuro. (feito)
 3. Integração com ADB: detecção de dispositivos e conexão básica. (pendente)
 4. Recepção e exibição de stream de vídeo de 1 dispositivo. (pendente)
@@ -105,3 +105,60 @@ Planejamento de módulos futuros (ainda não extraídos):
   - Evite comentários excessivos; priorize código limpo e verboso que se explique por si só.
   - Comente apenas quando houver decisões não triviais, trade-offs, ou detalhes de integração difíceis.
   - Mantenha comentários atualizados ou remova-os; comentários desatualizados são piores do que nenhum.
+
+
+## Pipeline Kotlin-first (scrcpy-like)
+- Resumo do fluxo
+  - Desktop inicia um servidor no Android via ADB (push/call) e cria túnel de sockets.
+  - No Android, o servidor abre sockets para vídeo, áudio e controle; captura a tela para um Surface de entrada do encoder (MediaCodec) e escreve pacotes codificados nos sockets.
+  - No desktop, o cliente recebe pacotes, demuxa, decodifica e renderiza; um canal de controle bidirecional injeta teclado/mouse e sincroniza clipboard.
+
+- Canais e Túnel ADB
+  - Sockets no Android (Unix domain socket localabstract: scrcpy-like por deviceId).
+  - Túnel: adb reverse (desktop<-device) ou adb forward (desktop->device). Preferência por reverse quando possível.
+  - Três conexões por dispositivo: vídeo, áudio (opcional na 1ª fase, pode ficar desabilitado), controle.
+
+- Servidor Android (Kotlin)
+  - Processo iniciado via app_process com CLASSPATH apontando para o .jar/.apk do servidor.
+  - Abre LocalServerSocket (tunnelForward) ou conecta para localabstract:NAME (reverse).
+  - Captura: cria VirtualDisplay espelhando a tela ativa para um Surface do MediaCodec encoder (H.264 na 1ª fase). Quando necessário, aplica transform/crop/rotação via OpenGL.
+  - Encoder: MediaCodec com Surface de entrada; escreve header (LxA) e pacotes com metadados (PTS/flags) no socket de vídeo.
+  - Controle: loop que lê mensagens serializadas (teclado, mouse, clipboard) e injeta via InputManager/ServiceManager.
+
+- Cliente Desktop (Kotlin)
+  - ADB: descobre dispositivos, cria/derruba túneis (reverse/forward), inicia/para servidor por dispositivo.
+  - Demuxer: protocolo leve que lê codecId, LxA (largura x altura) e, para cada pacote, header [PTS/flags(8)][len(4)] seguido do payload.
+  - Decoder: FFmpeg via bindings JVM (ex.: JavaCPP/Bytedeco) ou alternativa; MVP pode começar apenas com vídeo H.264.
+  - Renderização: enviar frames decodificados para um surface/textura exibida em Compose (interop com Skia/GL). A UI exibirá um Card por dispositivo mantendo aspecto 9:16.
+  - Controle: cliente serializa eventos e envia no socket de controle; integra com eventos do mouse/teclado na view ativa.
+
+- Mapeamento para módulos (planejados)
+  - core/adb
+    - Interfaces: AdbRepository (descoberta, reverse/forward, push, shell/app_process), AdbTunnel.
+    - Implementação JVM (ProcessBuilder) com comandos adb e parsing robusto.
+  - core/stream
+    - DeviceStreamClient: gerencia sockets (vídeo/áudio/controle) de um dispositivo.
+    - Demuxer, Decoder, FrameSink (renderizador), Recorder (futuro).
+  - core/input
+    - ControlChannelClient: serialização de mensagens e envio; mapeamento de eventos de UI para protocolo.
+  - ui-theme
+    - Tema escuro padrão compartilhado.
+
+- UseCases (exemplos)
+  - GetConnectedDevicesUseCase (feito, lista dispositivos).
+  - PushServerToDeviceUseCase (adb push do servidor Kotlin).
+  - StartDeviceServerUseCase (adb shell app_process com CLASSPATH).
+  - SetupReverseTunnelUseCase / SetupForwardTunnelUseCase.
+  - StartMirrorUseCase (abre sockets, inicia demux/decoder/render, conecta controle).
+  - StopMirrorUseCase (encerra fluxo e limpa túneis).
+  - SendPointerEventUseCase, SendKeyEventUseCase, SyncClipboardUseCase.
+
+- Decisões técnicas (Kotlin-first)
+  - Toda a orquestração em Kotlin (JVM/Compose no desktop; Kotlin no servidor Android).
+  - Concurrency com coroutines (Dispatchers.IO para I/O, coroutines por dispositivo).
+  - Sockets com java.nio (non-blocking) quando necessário; serialização binária simples.
+  - Decoder via bindings JVM para FFmpeg; alternativa futura: integração com VAAPI/Vulkan dependendo do SO.
+  - Evitar "Services" genéricos; preferir Repositories (infra) e UseCases (domínio), com DI simples.
+
+- Fases de implementação
+  1) ADB básico: listar dispositivos (feito) e observar hot-plug. 2) Túnel reverse/forward e start do servidor (stub). 3) Protocolo de demux e recepção de vídeo H.264. 4) Decodificação e renderização de 1 dispositivo. 5) Múltiplos dispositivos em grid. 6) Canal de controle (mouse/teclado). 7) Áudio opcional. 8) Otimizações e builds multi-OS.

@@ -6,6 +6,7 @@ composeMultiplatform = "1.8.2"
 junit = "4.13.2"
 kotlin = "2.2.0"
 kotlinx-coroutines = "1.10.2"
+bytedeco-ffmpeg = "6.0-1.5.9"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }

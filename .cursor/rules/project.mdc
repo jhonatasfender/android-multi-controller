@@ -1,0 +1,243 @@
+---
+alwaysApply: true
+---
+
+# Regras do Cursor — MirrorDesk
+
+Estas regras guiam o agente no Cursor para desenvolver o MirrorDesk: espelhamento simultâneo de múltiplos dispositivos Android, com abordagem técnica inspirada no scrcpy e UI em Kotlin Compose Multiplatform (Desktop).
+
+## Comportamento do Agente
+- Atue de forma incremental, precisa e alinhada a este documento e ao estado real do repositório.
+- Preserve decisões e contexto previamente estabelecidos; só substitua se estiver obsoleto.
+- Mantenha postura crítica e construtiva: questione decisões, apresente alternativas e proponha melhorias com racional claro.
+- Priorize automação completa por step: após qualquer edição relevante, valide build/teste local.
+- Evite confirmações desnecessárias; solicite ajuda apenas quando realmente bloqueado.
+- Nunca introduza funcionalidades fora do escopo definido nas seções abaixo.
+- Integre-se ao fluxo de trabalho do projeto: Repositories (infra) + UseCases (domínio) + DI simples.
+
+## Princípios de Código
+- Verbosidade é importante: prefira nomes longos e descritivos, sem abreviações obscuras.
+- Não escrever comentários em código. Não adicionar comentários inline. Registre decisões não triviais em documentação (arquivos .md) ou KDoc somente para APIs públicas, quando indispensável.
+- Tipos explícitos quando aumentarem a clareza. Funções pequenas, focadas e com early-returns.
+- Evite God classes e utilitários genéricos. Um arquivo por classe pública.
+- Nomes de pacotes: `com.mirrordesk.*` (migrar gradualmente se necessário).
+
+## Stack e SO
+- Cliente Desktop: Kotlin + Compose Multiplatform (Desktop) com tema escuro padrão Material.
+- Foco inicial em Linux; preparar base para Windows e macOS.
+
+## Estrutura do Projeto (atual)
+- `composeApp/` (módulo principal Desktop)
+  - `src/jvmMain/kotlin/org/example/project/` código da aplicação
+  - `src/jvmMain/composeResources/` recursos
+  - `src/jvmTest/` testes
+- Gradle Wrapper habilitado; scripts em `build.gradle.kts` e `composeApp/build.gradle.kts`.
+
+## Execução
+- Requisitos: JDK 21+; ADB instalado para testes reais.
+- Padronização de Java via SDKMAN (recomendado):
+  - Utilize o SDKMAN para instalar e selecionar o JDK 21 (Temurin/Zulu recomendados).
+  - Instalação: `sdk install java 21` (ou uma variante específica como `sdk install java 21.0.3-tem`).
+  - Seleção na sessão atual: `sdk use java 21`.
+  - Verificação: `java -version` e `echo $JAVA_HOME` devem refletir o JDK 21.
+  - Opcional: use `sdk env` com `.sdkmanrc` para fixar a versão no projeto.
+- Comandos (na raiz do repo):
+  - `./gradlew :composeApp:run`
+  - `./gradlew build`
+  - `./gradlew test`
+
+## Pesquisas na Web
+- Tornar explícito: sempre pesquisar quando o tópico for pouco comum a LLMs, recente, sujeito a mudanças frequentes ou quando houver dúvida sobre versões/compatibilidades.
+- Priorizar fontes oficiais (documentações, repositórios, changelogs, issues/PRs). Evitar fóruns desatualizados.
+- Citar as fontes com links quando decisões dependerem dessas informações.
+- Validar compatibilidade entre versões (Kotlin, Compose, Gradle, FFmpeg/Bytedeco, ADB) antes de propor alterações.
+- Considerar datas de publicação e notas de release para evitar instruções obsoletas.
+
+## Arquitetura Proposta (alto nível)
+- Cliente Desktop
+  - UI para gerenciar múltiplos dispositivos via ADB, uma view por dispositivo.
+  - Decodificação e renderização de vídeo por dispositivo.
+  - Envio de eventos de teclado/mouse para o dispositivo selecionado.
+- Camadas/Core
+  - core-adb: descoberta de dispositivos, conexão, reverse/forward, push/shell.
+  - core-stream: recepção e decodificação (vídeo inicialmente, áudio opcional).
+  - core-input: mapeamento e envio de eventos de controle.
+  - ui-theme: tema escuro compartilhado.
+- Servidor no dispositivo (Android)
+  - Reuso do conceito scrcpy (iniciado via ADB), com captura via MediaProjection/MediaCodec (H.264 na 1ª fase) e canais de vídeo/controle (áudio opcional).
+
+## Pipeline Kotlin-first (scrcpy-like)
+- Desktop inicia servidor Android via ADB (push/call) e cria túnel (preferir reverse).
+- Android abre sockets para vídeo e controle; encoder escreve pacotes com metadados.
+- Desktop recebe, demuxa, decodifica e renderiza; canal de controle injeta eventos.
+
+## Canais e Túnel ADB
+- Local abstract sockets por dispositivo no Android.
+- Três conexões por dispositivo: vídeo, áudio (desabilitado na 1ª fase), controle.
+- Preferir `adb reverse`; usar `adb forward` quando necessário.
+
+## Mapeamento de Módulos (planejado)
+- core/adb
+  - Interfaces: `AdbRepository` (descoberta, reverse/forward, push, shell/app_process), `AdbTunnel`.
+  - Implementação JVM (ProcessBuilder) com parsing robusto.
+- core/stream
+  - `DeviceStreamClient` para sockets (vídeo/áudio/controle).
+  - Demuxer, Decoder, FrameSink, Recorder (futuro).
+- core/input
+  - `ControlChannelClient`: serialização de mensagens e envio; mapeamento de eventos da UI.
+- ui-theme
+  - Tema escuro padrão compartilhado.
+
+## Regras de Domínio: UseCases
+- Toda ação de aplicação como UseCase: `class XyzUseCase { suspend operator fun invoke(input: In): Out }`.
+- UseCases sem dependências diretas de UI; recebem Repositories via DI.
+- Benefícios: testabilidade, clareza de intenção e separação de camadas.
+
+## Decodificação e Renderização
+- MVP: vídeo H.264.
+- Decoder preferencial via bindings JVM (FFmpeg/Bytedeco). Avaliar aceleração no futuro (VAAPI/Vulkan) por SO.
+- Renderização integrada ao Compose mantendo aspecto 9:16 por dispositivo.
+
+## Controle (Input)
+- Canal de controle bidirecional para teclado/mouse e clipboard.
+- Mapear eventos de UI ativa para protocolo do `ControlChannelClient`.
+
+## Roadmap Inicial
+1) ADB básico: listar dispositivos e hot-plug.
+2) Túnel reverse/forward e start do servidor (stub).
+3) Protocolo de demux e recepção de vídeo H.264.
+4) Decodificação e renderização de 1 dispositivo.
+5) Suporte a múltiplos dispositivos simultâneos (grid).
+6) Canal de controle (mouse/teclado).
+7) Áudio opcional.
+8) Otimizações e builds multi-OS.
+
+## Referências
+- Projeto scrcpy local para estudo: `/home/jonatas/projects/github/delete/scrcpy`
+  - Dicas (Linux):
+    - `ls -la /home/jonatas/projects/github/delete/scrcpy`
+    - `tree -L 2 /home/jonatas/projects/github/delete/scrcpy` (se disponível)
+    - `grep -R "server" /home/jonatas/projects/github/delete/scrcpy`
+
+## Regras de Commits e Idioma
+- Mensagens objetivas; preferir inglês no código e commits; documentação pode ser PT-BR.
+- Mantenha tema escuro padrão na UI e consistência visual.
+
+## Diretrizes Finais (Reforço)
+- Não adicionar comentários em código. Verbosidade no código é obrigatória.
+- Documente decisões complexas em arquivos `.md` no repositório.
+- Após cada mudança relevante, rode build/testes e corrija falhas antes de prosseguir.
+
+# Regras do Cursor — MirrorDesk
+
+Estas regras guiam o agente no Cursor para desenvolver o MirrorDesk: espelhamento simultâneo de múltiplos dispositivos Android, com abordagem técnica inspirada no scrcpy e UI em Kotlin Compose Multiplatform (Desktop).
+
+## Comportamento do Agente
+- Atue de forma incremental, precisa e alinhada a este documento e ao estado real do repositório.
+- Preserve decisões e contexto previamente estabelecidos; só substitua se estiver obsoleto.
+- Mantenha postura crítica e construtiva: questione decisões, apresente alternativas e proponha melhorias com racional claro.
+- Priorize automação completa por step: após qualquer edição relevante, valide build/teste local.
+- Evite confirmações desnecessárias; solicite ajuda apenas quando realmente bloqueado.
+- Nunca introduza funcionalidades fora do escopo definido nas seções abaixo.
+- Integre-se ao fluxo de trabalho do projeto: Repositories (infra) + UseCases (domínio) + DI simples.
+
+## Princípios de Código
+- Verbosidade é importante: prefira nomes longos e descritivos, sem abreviações obscuras.
+- Não escrever comentários em código. Não adicionar comentários inline. Registre decisões não triviais em documentação (arquivos .md) ou KDoc somente para APIs públicas, quando indispensável.
+- Tipos explícitos quando aumentarem a clareza. Funções pequenas, focadas e com early-returns.
+- Evite God classes e utilitários genéricos. Um arquivo por classe pública.
+- Nomes de pacotes: `com.mirrordesk.*` (migrar gradualmente se necessário).
+
+## Stack e SO
+- Cliente Desktop: Kotlin + Compose Multiplatform (Desktop) com tema escuro padrão Material.
+- Foco inicial em Linux; preparar base para Windows e macOS.
+
+## Estrutura do Projeto (atual)
+- `composeApp/` (módulo principal Desktop)
+  - `src/jvmMain/kotlin/org/example/project/` código da aplicação
+  - `src/jvmMain/composeResources/` recursos
+  - `src/jvmTest/` testes
+- Gradle Wrapper habilitado; scripts em `build.gradle.kts` e `composeApp/build.gradle.kts`.
+
+## Execução
+- Requisitos: JDK 21+; ADB instalado para testes reais.
+- Comandos (na raiz do repo):
+  - `./gradlew :composeApp:run`
+  - `./gradlew build`
+  - `./gradlew test`
+
+## Arquitetura Proposta (alto nível)
+- Cliente Desktop
+  - UI para gerenciar múltiplos dispositivos via ADB, uma view por dispositivo.
+  - Decodificação e renderização de vídeo por dispositivo.
+  - Envio de eventos de teclado/mouse para o dispositivo selecionado.
+- Camadas/Core
+  - core-adb: descoberta de dispositivos, conexão, reverse/forward, push/shell.
+  - core-stream: recepção e decodificação (vídeo inicialmente, áudio opcional).
+  - core-input: mapeamento e envio de eventos de controle.
+  - ui-theme: tema escuro compartilhado.
+- Servidor no dispositivo (Android)
+  - Reuso do conceito scrcpy (iniciado via ADB), com captura via MediaProjection/MediaCodec (H.264 na 1ª fase) e canais de vídeo/controle (áudio opcional).
+
+## Pipeline Kotlin-first (scrcpy-like)
+- Desktop inicia servidor Android via ADB (push/call) e cria túnel (preferir reverse).
+- Android abre sockets para vídeo e controle; encoder escreve pacotes com metadados.
+- Desktop recebe, demuxa, decodifica e renderiza; canal de controle injeta eventos.
+
+## Canais e Túnel ADB
+- Local abstract sockets por dispositivo no Android.
+- Três conexões por dispositivo: vídeo, áudio (desabilitado na 1ª fase), controle.
+- Preferir `adb reverse`; usar `adb forward` quando necessário.
+
+## Mapeamento de Módulos (planejado)
+- core/adb
+  - Interfaces: `AdbRepository` (descoberta, reverse/forward, push, shell/app_process), `AdbTunnel`.
+  - Implementação JVM (ProcessBuilder) com parsing robusto.
+- core/stream
+  - `DeviceStreamClient` para sockets (vídeo/áudio/controle).
+  - Demuxer, Decoder, FrameSink, Recorder (futuro).
+- core/input
+  - `ControlChannelClient`: serialização de mensagens e envio; mapeamento de eventos da UI.
+- ui-theme
+  - Tema escuro padrão compartilhado.
+
+## Regras de Domínio: UseCases
+- Toda ação de aplicação como UseCase: `class XyzUseCase { suspend operator fun invoke(input: In): Out }`.
+- UseCases sem dependências diretas de UI; recebem Repositories via DI.
+- Benefícios: testabilidade, clareza de intenção e separação de camadas.
+
+## Decodificação e Renderização
+- MVP: vídeo H.264.
+- Decoder preferencial via bindings JVM (FFmpeg/Bytedeco). Avaliar aceleração no futuro (VAAPI/Vulkan) por SO.
+- Renderização integrada ao Compose mantendo aspecto 9:16 por dispositivo.
+
+## Controle (Input)
+- Canal de controle bidirecional para teclado/mouse e clipboard.
+- Mapear eventos de UI ativa para protocolo do `ControlChannelClient`.
+
+## Roadmap Inicial
+1) ADB básico: listar dispositivos e hot-plug.
+2) Túnel reverse/forward e start do servidor (stub).
+3) Protocolo de demux e recepção de vídeo H.264.
+4) Decodificação e renderização de 1 dispositivo.
+5) Suporte a múltiplos dispositivos simultâneos (grid).
+6) Canal de controle (mouse/teclado).
+7) Áudio opcional.
+8) Otimizações e builds multi-OS.
+
+## Referências
+- Projeto scrcpy local para estudo: `/home/jonatas/projects/github/delete/scrcpy`
+  - Dicas (Linux):
+    - `ls -la /home/jonatas/projects/github/delete/scrcpy`
+    - `tree -L 2 /home/jonatas/projects/github/delete/scrcpy` (se disponível)
+    - `grep -R "server" /home/jonatas/projects/github/delete/scrcpy`
+
+## Regras de Commits e Idioma
+- Mensagens objetivas; preferir inglês no código e commits; documentação pode ser PT-BR.
+- Mantenha tema escuro padrão na UI e consistência visual.
+
+## Diretrizes Finais (Reforço)
+- Não adicionar comentários em código. Verbosidade no código é obrigatória.
+- Documente decisões complexas em arquivos `.md` no repositório.
+- Após cada mudança relevante, rode build/testes e corrija falhas antes de prosseguir.
+
