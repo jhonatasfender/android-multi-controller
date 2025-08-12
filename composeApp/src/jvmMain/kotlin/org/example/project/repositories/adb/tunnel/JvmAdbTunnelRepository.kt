@@ -4,27 +4,41 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 class JvmAdbTunnelRepository : AdbTunnelRepository {
-    override fun reverse(serial: String, deviceSocketName: String, localPort: Int): Boolean {
+    override fun reverse(
+        serial: String,
+        deviceSocketName: String,
+        localPort: Int,
+    ): Boolean {
         val adb = resolveAdbPath()
-        val cmd = listOf(adb, "-s", serial, "reverse", "localabstract:${deviceSocketName}", "tcp:${localPort}")
+        val cmd = listOf(adb, "-s", serial, "reverse", "localabstract:$deviceSocketName", "tcp:$localPort")
         return run(cmd)
     }
 
-    override fun forward(serial: String, localPort: Int, deviceSocketName: String): Boolean {
+    override fun forward(
+        serial: String,
+        localPort: Int,
+        deviceSocketName: String,
+    ): Boolean {
         val adb = resolveAdbPath()
-        val cmd = listOf(adb, "-s", serial, "forward", "tcp:${localPort}", "localabstract:${deviceSocketName}")
+        val cmd = listOf(adb, "-s", serial, "forward", "tcp:$localPort", "localabstract:$deviceSocketName")
         return run(cmd)
     }
 
-    override fun removeReverse(serial: String, deviceSocketName: String): Boolean {
+    override fun removeReverse(
+        serial: String,
+        deviceSocketName: String,
+    ): Boolean {
         val adb = resolveAdbPath()
-        val cmd = listOf(adb, "-s", serial, "reverse", "--remove", "localabstract:${deviceSocketName}")
+        val cmd = listOf(adb, "-s", serial, "reverse", "--remove", "localabstract:$deviceSocketName")
         return run(cmd)
     }
 
-    override fun removeForward(serial: String, localPort: Int): Boolean {
+    override fun removeForward(
+        serial: String,
+        localPort: Int,
+    ): Boolean {
         val adb = resolveAdbPath()
-        val cmd = listOf(adb, "-s", serial, "forward", "--remove", "tcp:${localPort}")
+        val cmd = listOf(adb, "-s", serial, "forward", "--remove", "tcp:$localPort")
         return run(cmd)
     }
 
@@ -53,5 +67,3 @@ class JvmAdbTunnelRepository : AdbTunnelRepository {
         return "adb"
     }
 }
-
-

@@ -128,6 +128,21 @@ Estas regras guiam o agente no Cursor para desenvolver o MirrorDesk: espelhament
 - Documente decisões complexas em arquivos `.md` no repositório.
 - Após cada mudança relevante, rode build/testes e corrija falhas antes de prosseguir.
 
+
+## Estilo e Formatação (Ktlint)
+- Plugin: `org.jlleitschuh.gradle.ktlint` versão `12.1.1` aplicado no root e subprojetos.
+- Execução:
+  - `./gradlew ktlintFormat` para formatar.
+  - `./gradlew ktlintCheck` para verificar.
+- Configuração `.editorconfig` (KtLint 0.49+):
+  - `ktlint_code_style = ktlint_official`
+  - `max_line_length = 140`
+  - Regras desabilitadas por contexto do projeto:
+    - `ktlint_standard_function-naming = disabled`
+    - `ktlint_standard_filename = disabled`
+    - `ktlint_standard_no-wildcard-imports = disabled`
+- Exclusões de código gerado e build são tratadas via filtro do plugin no `build.gradle.kts`.
+
 # Regras do Cursor — MirrorDesk
 
 Estas regras guiam o agente no Cursor para desenvolver o MirrorDesk: espelhamento simultâneo de múltiplos dispositivos Android, com abordagem técnica inspirada no scrcpy e UI em Kotlin Compose Multiplatform (Desktop).

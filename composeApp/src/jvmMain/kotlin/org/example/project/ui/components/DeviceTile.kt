@@ -23,23 +23,25 @@ fun DeviceTile(
     minTileHeight: Dp,
 ) {
     Card(
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.onSurface
-        ),
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        modifier = Modifier
-            .padding(8.dp)
-            .aspectRatio(9f / 16f)
-            .background(MaterialTheme.colorScheme.surface)
-            .defaultMinSize(minHeight = minTileHeight)
+        modifier =
+            Modifier
+                .padding(8.dp)
+                .aspectRatio(9f / 16f)
+                .background(MaterialTheme.colorScheme.surface)
+                .defaultMinSize(minHeight = minTileHeight),
     ) {
         Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Text(
                     text = name,
                     style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
                 )
                 SuggestionChip(onClick = {}, label = { Text(state) })
             }
@@ -47,25 +49,27 @@ fun DeviceTile(
             Spacer(Modifier.height(8.dp))
 
             Box(
-                modifier = Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
+                contentAlignment = Alignment.Center,
             ) {
                 if (preview != null) {
                     Image(
                         bitmap = preview,
                         contentDescription = null,
                         modifier = Modifier.fillMaxHeight().aspectRatio(9f / 16f),
-                        contentScale = ContentScale.FillHeight
+                        contentScale = ContentScale.FillHeight,
                     )
                 }
             }
 
-            val status = when {
-                error != null -> "Erro: $error"
-                running -> "Streaming • ${formatBytes(bytes)}"
-                else -> "Aguardando"
-            }
+            val status =
+                when {
+                    error != null -> "Erro: $error"
+                    running -> "Streaming • ${formatBytes(bytes)}"
+                    else -> "Aguardando"
+                }
             Text(
                 text = status,
                 style = MaterialTheme.typography.bodySmall,
@@ -80,5 +84,3 @@ private fun formatBytes(bytes: Long): String {
     val mb = kb / 1024.0
     return if (mb >= 1.0) String.format("%.1f MB", mb) else String.format("%.0f KB", kb)
 }
-
-

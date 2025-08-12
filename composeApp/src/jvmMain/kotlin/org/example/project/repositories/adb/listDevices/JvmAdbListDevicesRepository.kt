@@ -6,30 +6,31 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 class JvmAdbListDevicesRepository : AdbListDevicesRepository {
-    override suspend fun listDevices(): List<AdbDevice> = withContext(Dispatchers.IO) {
-        val adbPath = resolveAdbPath()
-        val command = listOf(adbPath, "devices", "-l")
+    override suspend fun listDevices(): List<AdbDevice> =
+        withContext(Dispatchers.IO) {
+            val adbPath = resolveAdbPath()
+            val command = listOf(adbPath, "devices", "-l")
 
-        try {
-            val pb = ProcessBuilder(command)
-            pb.directory(File(System.getProperty("user.dir")))
-            pb.redirectErrorStream(true)
-            val process = pb.start()
+            try {
+                val pb = ProcessBuilder(command)
+                pb.directory(File(System.getProperty("user.dir")))
+                pb.redirectErrorStream(true)
+                val process = pb.start()
 
-            if (!process.waitFor(5, TimeUnit.SECONDS)) {
-                process.destroyForcibly()
+                if (!process.waitFor(5, TimeUnit.SECONDS)) {
+                    process.destroyForcibly()
+                    return@withContext emptyList()
+                }
+
+                val exitCode = process.exitValue()
+                val output = process.inputStream.bufferedReader().use { it.readText() }
+                if (exitCode != 0) return@withContext emptyList()
+
+                return@withContext parseAdbDevicesOutput(output)
+            } catch (_: Exception) {
                 return@withContext emptyList()
             }
-
-            val exitCode = process.exitValue()
-            val output = process.inputStream.bufferedReader().use { it.readText() }
-            if (exitCode != 0) return@withContext emptyList()
-
-            return@withContext parseAdbDevicesOutput(output)
-        } catch (_: Exception) {
-            return@withContext emptyList()
         }
-    }
 
     private fun resolveAdbPath(): String {
         val fromEnv = System.getenv("ADB") ?: System.getenv("ADB_PATH")
@@ -39,11 +40,11 @@ class JvmAdbListDevicesRepository : AdbListDevicesRepository {
         return "adb"
     }
 
-
     internal fun parseAdbDevicesOutput(output: String): List<AdbDevice> {
-        val lines = output.lines()
-            .map { it.trim() }
-            .filter { it.isNotEmpty() }
+        val lines =
+            output.lines()
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
 
         val devices = mutableListOf<AdbDevice>()
         var inTable = false
@@ -73,16 +74,16 @@ class JvmAdbListDevicesRepository : AdbListDevicesRepository {
                 }
             }
 
-            devices += AdbDevice(
-                id = serial,
-                state = state,
-                model = kvs["model"],
-                device = kvs["device"],
-                product = kvs["product"],
-            )
+            devices +=
+                AdbDevice(
+                    id = serial,
+                    state = state,
+                    model = kvs["model"],
+                    device = kvs["device"],
+                    product = kvs["product"],
+                )
         }
 
         return devices
     }
 }
-

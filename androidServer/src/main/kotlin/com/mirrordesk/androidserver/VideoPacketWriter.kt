@@ -6,12 +6,29 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
 interface VideoPacketWriter {
-    fun writeVideoHeader(fileDescriptor: FileDescriptor, codecId: Int, width: Int, height: Int)
-    fun writeFrame(fileDescriptor: FileDescriptor, payload: ByteBuffer, ptsUs: Long, isConfig: Boolean, isKeyFrame: Boolean)
+    fun writeVideoHeader(
+        fileDescriptor: FileDescriptor,
+        codecId: Int,
+        width: Int,
+        height: Int,
+    )
+
+    fun writeFrame(
+        fileDescriptor: FileDescriptor,
+        payload: ByteBuffer,
+        ptsUs: Long,
+        isConfig: Boolean,
+        isKeyFrame: Boolean,
+    )
 }
 
 class DefaultVideoPacketWriter : VideoPacketWriter {
-    override fun writeVideoHeader(fileDescriptor: FileDescriptor, codecId: Int, width: Int, height: Int) {
+    override fun writeVideoHeader(
+        fileDescriptor: FileDescriptor,
+        codecId: Int,
+        width: Int,
+        height: Int,
+    ) {
         val header = ByteBuffer.allocate(12).order(ByteOrder.BIG_ENDIAN)
         header.putInt(codecId)
         header.putInt(width)
@@ -20,7 +37,13 @@ class DefaultVideoPacketWriter : VideoPacketWriter {
         Os.write(fileDescriptor, header)
     }
 
-    override fun writeFrame(fileDescriptor: FileDescriptor, payload: ByteBuffer, ptsUs: Long, isConfig: Boolean, isKeyFrame: Boolean) {
+    override fun writeFrame(
+        fileDescriptor: FileDescriptor,
+        payload: ByteBuffer,
+        ptsUs: Long,
+        isConfig: Boolean,
+        isKeyFrame: Boolean,
+    ) {
         val configFlag = 1L shl 63
         val keyFlag = 1L shl 62
 
@@ -43,5 +66,3 @@ class DefaultVideoPacketWriter : VideoPacketWriter {
         }
     }
 }
-
-

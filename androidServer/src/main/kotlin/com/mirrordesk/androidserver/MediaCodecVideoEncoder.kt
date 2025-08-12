@@ -12,14 +12,19 @@ class MediaCodecVideoEncoder(
     private val codecMimeType: String,
     private val iFrameIntervalSeconds: Int,
     private val repeatPreviousFrameUs: Long,
-    private val packetWriter: VideoPacketWriter
+    private val packetWriter: VideoPacketWriter,
 ) {
     data class EncoderSession(
         val codec: MediaCodec,
-        val inputSurface: Surface
+        val inputSurface: Surface,
     )
 
-    fun createSession(bitRate: Int, width: Int, height: Int, maxFpsToEncoder: Float): EncoderSession {
+    fun createSession(
+        bitRate: Int,
+        width: Int,
+        height: Int,
+        maxFpsToEncoder: Float,
+    ): EncoderSession {
         val codec = MediaCodec.createEncoderByType(codecMimeType)
 
         val format = MediaFormat()
@@ -39,7 +44,11 @@ class MediaCodecVideoEncoder(
         return EncoderSession(codec, inputSurface)
     }
 
-    fun drainOnce(codec: MediaCodec, fd: java.io.FileDescriptor, bufferInfo: MediaCodec.BufferInfo) : Int {
+    fun drainOnce(
+        codec: MediaCodec,
+        fd: java.io.FileDescriptor,
+        bufferInfo: MediaCodec.BufferInfo,
+    ): Int {
         val outIndex = codec.dequeueOutputBuffer(bufferInfo, 200_000)
         if (outIndex >= 0) {
             if (bufferInfo.size > 0) {
@@ -66,7 +75,10 @@ class MediaCodecVideoEncoder(
         }
     }
 
-    fun updateBitrate(codec: MediaCodec, bitRate: Int) {
+    fun updateBitrate(
+        codec: MediaCodec,
+        bitRate: Int,
+    ) {
         if (Build.VERSION.SDK_INT >= 19) {
             val params = Bundle()
             params.putInt(MediaCodec.PARAMETER_KEY_VIDEO_BITRATE, bitRate)
@@ -74,5 +86,3 @@ class MediaCodecVideoEncoder(
         }
     }
 }
-
-

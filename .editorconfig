@@ -1,0 +1,16 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+charset = utf-8
+
+[*.{kt,kts}]
+ktlint_code_style = ktlint_official
+max_line_length = 140
+ktlint_standard_function-naming = disabled
+ktlint_standard_filename = disabled
+ktlint_standard_no-wildcard-imports = disabled
+
+ 
+

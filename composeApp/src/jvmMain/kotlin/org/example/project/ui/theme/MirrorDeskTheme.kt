@@ -8,5 +8,3 @@ import androidx.compose.runtime.Composable
 fun MirrorDeskTheme(content: @Composable () -> Unit) {
     MaterialTheme(colorScheme = darkColorScheme(), content = content)
 }
-
-

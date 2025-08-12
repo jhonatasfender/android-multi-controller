@@ -11,7 +11,7 @@ class JvmAndroidServerRepository : AndroidServerRepository {
         mainClass: String,
         socketName: String,
         video: Boolean,
-        control: Boolean
+        control: Boolean,
     ): Boolean {
         val adb = resolveAdbPath()
         val hostJar = File(jarPathOnHost)
@@ -19,14 +19,25 @@ class JvmAndroidServerRepository : AndroidServerRepository {
 
         if (!run(listOf(adb, "-s", serial, "push", hostJar.absolutePath, deviceJarPath))) return false
 
-        val args = buildList {
-            add(adb); add("-s"); add(serial); add("shell")
-            add("CLASSPATH=${deviceJarPath}")
-            add("app_process"); add("/"); add(mainClass)
-            add("--socket"); add(socketName)
-            if (video) { add("--video") }
-            if (control) { add("--control") }
-        }
+        val args =
+            buildList {
+                add(adb)
+                add("-s")
+                add(serial)
+                add("shell")
+                add("CLASSPATH=$deviceJarPath")
+                add("app_process")
+                add("/")
+                add(mainClass)
+                add("--socket")
+                add(socketName)
+                if (video) {
+                    add("--video")
+                }
+                if (control) {
+                    add("--control")
+                }
+            }
         return run(args)
     }
 
@@ -55,5 +66,3 @@ class JvmAndroidServerRepository : AndroidServerRepository {
         return "adb"
     }
 }
-
-

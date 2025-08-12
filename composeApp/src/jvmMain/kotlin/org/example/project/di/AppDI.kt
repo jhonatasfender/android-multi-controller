@@ -11,9 +11,10 @@ data class AppDependencies(
     val adbScreenRecordRepository: AdbScreenRecordRepository,
 )
 
-val LocalAppDependencies = staticCompositionLocalOf<AppDependencies> {
-    error("AppDependencies not provided")
-}
+val LocalAppDependencies =
+    staticCompositionLocalOf<AppDependencies> {
+        error("AppDependencies not provided")
+    }
 
 @Composable
 fun ProvideAppDependencies(

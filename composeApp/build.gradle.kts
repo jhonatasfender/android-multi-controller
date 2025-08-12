@@ -8,7 +8,7 @@ plugins {
 
 kotlin {
     jvm()
-    
+
     sourceSets {
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -30,7 +30,6 @@ kotlin {
         }
     }
 }
-
 
 compose.desktop {
     application {

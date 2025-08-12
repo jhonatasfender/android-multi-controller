@@ -9,7 +9,10 @@ import java.io.IOException
 class LocalSocketServer(private val socketName: String) : AutoCloseable {
     private val serverSocket = LocalServerSocket(socketName)
 
-    fun accept(timeoutMs: Int? = null, sendDummyByte: Boolean = false): Pair<LocalSocket, FileDescriptor> {
+    fun accept(
+        timeoutMs: Int? = null,
+        sendDummyByte: Boolean = false,
+    ): Pair<LocalSocket, FileDescriptor> {
         val client = serverSocket.accept()
         if (timeoutMs != null && Build.VERSION.SDK_INT >= 21) {
             try {
@@ -31,5 +34,3 @@ class LocalSocketServer(private val socketName: String) : AutoCloseable {
         serverSocket.close()
     }
 }
-
-

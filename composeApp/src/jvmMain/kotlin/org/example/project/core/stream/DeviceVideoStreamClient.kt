@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import org.jetbrains.skia.Image
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.InputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -38,20 +37,21 @@ class DeviceVideoStreamClient(
 
     fun start() {
         if (readerJob != null) return
-        readerJob = scope.launch {
-            _state.value = _state.value.copy(running = true, error = null)
-            try {
-                val p = screenRecordRepo.startScreencapPngLoopExecOut(serial)
-                process = p
-                p.inputStream.use { input ->
-                    readPngStream(input)
+        readerJob =
+            scope.launch {
+                _state.value = _state.value.copy(running = true, error = null)
+                try {
+                    val p = screenRecordRepo.startScreencapPngLoopExecOut(serial)
+                    process = p
+                    p.inputStream.use { input ->
+                        readPngStream(input)
+                    }
+                } catch (t: Throwable) {
+                    _state.value = _state.value.copy(error = (t.message ?: t::class.simpleName))
+                } finally {
+                    _state.value = _state.value.copy(running = false)
                 }
-            } catch (t: Throwable) {
-                _state.value = _state.value.copy(error = (t.message ?: t::class.simpleName))
-            } finally {
-                _state.value = _state.value.copy(running = false)
             }
-        }
     }
 
     fun stop() {
@@ -61,7 +61,10 @@ class DeviceVideoStreamClient(
         process = null
         if (job != null) {
             scope.launch {
-                try { job.cancelAndJoin() } catch (_: Throwable) {}
+                try {
+                    job.cancelAndJoin()
+                } catch (_: Throwable) {
+                }
             }
         }
     }
@@ -92,11 +95,17 @@ class DeviceVideoStreamClient(
         }
     }
 
-    private fun readIntBigEndian(bytes: ByteArray, offset: Int): Int {
+    private fun readIntBigEndian(
+        bytes: ByteArray,
+        offset: Int,
+    ): Int {
         return ByteBuffer.wrap(bytes, offset, 4).order(ByteOrder.BIG_ENDIAN).int
     }
 
-    private fun readFully(input: InputStream, length: Int): ByteArray? {
+    private fun readFully(
+        input: InputStream,
+        length: Int,
+    ): ByteArray? {
         val out = ByteArray(length)
         var off = 0
         while (off < length) {
@@ -107,7 +116,10 @@ class DeviceVideoStreamClient(
         return out
     }
 
-    private fun resyncToSignature(input: InputStream, signature: ByteArray): Boolean {
+    private fun resyncToSignature(
+        input: InputStream,
+        signature: ByteArray,
+    ): Boolean {
         val window = ByteArray(signature.size)
         var filled = 0
         while (filled < window.size) {
@@ -126,5 +138,4 @@ class DeviceVideoStreamClient(
             window[window.size - 1] = b.toByte()
         }
     }
-    
 }

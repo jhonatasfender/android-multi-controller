@@ -17,19 +17,21 @@ object MiniServer {
             val packetWriter: VideoPacketWriter = DefaultVideoPacketWriter()
             packetWriter.writeVideoHeader(fd, CODEC_ID_H264, config.videoWidth, config.videoHeight)
 
-            val encoder = MediaCodecVideoEncoder(
-                codecMimeType = MIME,
-                iFrameIntervalSeconds = IFRAME_INTERVAL_SECONDS,
-                repeatPreviousFrameUs = REPEAT_PREV_FRAME_US,
-                packetWriter = packetWriter
-            )
+            val encoder =
+                MediaCodecVideoEncoder(
+                    codecMimeType = MIME,
+                    iFrameIntervalSeconds = IFRAME_INTERVAL_SECONDS,
+                    repeatPreviousFrameUs = REPEAT_PREV_FRAME_US,
+                    packetWriter = packetWriter,
+                )
 
-            val session = encoder.createSession(
-                bitRate = config.videoBitRate,
-                width = config.videoWidth,
-                height = config.videoHeight,
-                maxFpsToEncoder = config.maxFpsToEncoder
-            )
+            val session =
+                encoder.createSession(
+                    bitRate = config.videoBitRate,
+                    width = config.videoWidth,
+                    height = config.videoHeight,
+                    maxFpsToEncoder = config.maxFpsToEncoder,
+                )
 
             val bufferInfo = MediaCodec.BufferInfo()
             var lastPtsUs = -1L
@@ -59,5 +61,3 @@ object MiniServer {
         }
     }
 }
-
-

@@ -56,19 +56,21 @@ fun DevicesScreen() {
     }
 
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
     ) {
         if (devices.isNotEmpty()) {
             BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
                 val targetTileWidth = 360.dp
                 val minColumns = 2
                 val maxColumns = 6
-                val columns = remember(maxWidth) {
-                    val raw = (maxWidth / targetTileWidth).toInt().coerceAtLeast(minColumns)
-                    raw.coerceAtMost(maxColumns)
-                }
+                val columns =
+                    remember(maxWidth) {
+                        val raw = (maxWidth / targetTileWidth).toInt().coerceAtLeast(minColumns)
+                        raw.coerceAtMost(maxColumns)
+                    }
 
                 val gridState = rememberLazyGridState()
                 LazyVerticalGrid(
@@ -77,38 +79,37 @@ fun DevicesScreen() {
                     horizontalArrangement = Arrangement.spacedBy(24.dp),
                     verticalArrangement = Arrangement.spacedBy(24.dp),
                     state = gridState,
-                    modifier = Modifier.fillMaxSize()
+                    modifier = Modifier.fillMaxSize(),
                 ) {
-                items(devices) { device ->
-                    val client = clients[device.id]
-                    val streamState = if (client != null) client.state.collectAsState().value else DeviceVideoStreamClient.State()
-                    DeviceTile(
-                        name = device.displayName,
-                        state = device.state,
-                        running = streamState.running,
-                        bytes = streamState.bytesReceived,
-                        error = streamState.error,
-                        preview = streamState.lastFrame,
-                        minTileHeight = 180.dp,
-                    )
-                }
+                    items(devices) { device ->
+                        val client = clients[device.id]
+                        val streamState = if (client != null) client.state.collectAsState().value else DeviceVideoStreamClient.State()
+                        DeviceTile(
+                            name = device.displayName,
+                            state = device.state,
+                            running = streamState.running,
+                            bytes = streamState.bytesReceived,
+                            error = streamState.error,
+                            preview = streamState.lastFrame,
+                            minTileHeight = 180.dp,
+                        )
+                    }
                 }
             }
         } else {
-            val message = if (loading) {
-                "Procurando dispositivos ADB..."
-            } else {
-                "Nenhum dispositivo detectado. Conecte via USB e habilite a Depuração USB (ADB)."
-            }
+            val message =
+                if (loading) {
+                    "Procurando dispositivos ADB..."
+                } else {
+                    "Nenhum dispositivo detectado. Conecte via USB e habilite a Depuração USB (ADB)."
+                }
             Box(modifier = Modifier.fillMaxSize()) {
                 Text(
                     text = message,
                     style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.align(Alignment.Center)
+                    modifier = Modifier.align(Alignment.Center),
                 )
             }
         }
     }
 }
-
-

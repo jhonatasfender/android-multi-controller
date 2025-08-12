@@ -5,10 +5,16 @@ import java.io.File
 class JvmAdbScreenRecordRepository : AdbScreenRecordRepository {
     override fun startScreencapPngLoopExecOut(serial: String): Process {
         val adbPath = resolveAdbPath()
-        val cmd = listOf(
-            adbPath, "-s", serial,
-            "exec-out", "sh", "-c", "while true; do screencap -p; done"
-        )
+        val cmd =
+            listOf(
+                adbPath,
+                "-s",
+                serial,
+                "exec-out",
+                "sh",
+                "-c",
+                "while true; do screencap -p; done",
+            )
         val pb = ProcessBuilder(cmd)
         pb.directory(File(System.getProperty("user.dir")))
         return pb.start()
@@ -22,14 +28,18 @@ class JvmAdbScreenRecordRepository : AdbScreenRecordRepository {
         maxFps: Int?,
     ): Process {
         val adbPath = resolveAdbPath()
-        val cmd = mutableListOf(
-            adbPath, "-s", serial,
-            "exec-out", "screenrecord",
-            "--output-format=h264",
-            "-",
-        )
+        val cmd =
+            mutableListOf(
+                adbPath,
+                "-s",
+                serial,
+                "exec-out",
+                "screenrecord",
+                "--output-format=h264",
+                "-",
+            )
         if (width != null && height != null) {
-            cmd += listOf("--size", "${width}x${height}")
+            cmd += listOf("--size", "${width}x$height")
         }
         if (bitrateMbps != null) {
             val bps = (bitrateMbps.toLong() * 1_000_000L).toString()

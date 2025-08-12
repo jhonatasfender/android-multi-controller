@@ -66,5 +66,3 @@ tasks.register<ExportServerJarTask>("exportServerJar") {
     apkDir.set(apkPath)
     outFile.set(layout.buildDirectory.file("dist/mirrordesk-android-server.jar"))
 }
-
-
