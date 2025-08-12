@@ -31,3 +31,29 @@ Usage (high level):
 - Read the stream from localhost:27183 and parse as per the protocol above.
 
 Note: The sample is not part of the desktop Gradle build to keep the project buildable without the Android SDK.
+
+---
+
+Android server (app_process) quickstart
+
+Build the APK (to be used as a server jar):
+
+```bash
+./gradlew :androidServer:assembleRelease
+cp androidServer/build/outputs/apk/release/androidServer-release.apk androidServer/build/dist/mirrordesk-android-server.jar
+```
+
+Push and run on device:
+
+```bash
+adb push androidServer/build/dist/mirrordesk-android-server.jar /data/local/tmp/mirrordesk-android-server.jar
+adb forward tcp:27183 localabstract:mirrordesk_demo
+adb shell CLASSPATH=/data/local/tmp/mirrordesk-android-server.jar \
+  app_process / com.mirrordesk.androidserver.MiniServer --socket mirrordesk_demo --w 1280 --h 720 --bitrate 6000000 --maxfps 60
+```
+
+Client side should read 12-byte video header followed by repeated 12+N packet frames as per the protocol above.
+
+
+
+./start.sh --base-port 27183 --socket mirrordesk --w 1280 --h 720 --bitrate 6000000 --maxfps 60

@@ -35,4 +35,4 @@ plugins {
 }
 
 include(":composeApp")
-include(":serverStub")
+include(":androidServer")
